@@ -2,28 +2,29 @@
 First time? Check out the tutorial game:
 https://sprig.hackclub.com/gallery/getting_started
 
+
 @title: Maze Game
 @author: Felix Gao
 @tags: ["Puzzle", "Prision"]
 @addedOn: 2024-00-00
+*/
 
-
-/* People models! */
+// People lol
 const Player = "p";
 const Guard = "g";
 
-/* Misc */
+// Misc
 const LevelUp = "l"
 const Wall = "w";
 
-/* Lasers! */
+// Lasers!
 const laserVert = "v";
 const laserVertOff = "c";
 
 const laserHorz = "h";
 const laserHorzOff = "j";
 
-/* This door is never unlockable */
+// This door is never unlockable
 const Door = "d";
 const DoorHorz = "s";
   
@@ -33,7 +34,7 @@ const DoorLockedHorz = "x";
 const Key = "k";
 const Objective = "m";
 
-/* Music! */
+// Music!
 const music = {
   caught: tune`
 500: A4-500 + G4-500 + F4-500 + E4-500,
@@ -324,9 +325,9 @@ LLLLLLL6LLLLLLLL
 ................`]
 )
 
-/* Setup levels and different misc. screens here */
-/* Using 13x9 size for most maps */
-/* NOTE SELF: Each level should have the player and a checkpoint */
+// Setup levels and different misc. screens here
+// Using 13x9 size for most maps
+// NOTE SELF: Each level should have the player and a checkpoint
 let level = 0
 const levels = [
   map`
@@ -396,15 +397,17 @@ wwwwwwwwwwwww`,
 .............`
 }
 
-/* Misc settings */
+// Misc settings
 var HasKey = false;
 
+var tutorial = true;
 setMap(misc.tutorial)
 let x_align = 4;
 addText("< You!", options = { x: x_align, y: 3, color: color`0` });
 addText("< Avoid lasers", options = { x: x_align, y: 6, color: color`0` });
 addText("< Locked doors", options = { x: x_align, y: 9, color: color`0` });
 addText("< Key = open", options = { x: x_align, y: 12, color: color`0` });
+addText("Press 'L' to start!", options = { x: 1, y: 14, color: color`0` });
 
 
 setSolids([Player, Wall, Door, DoorHorz, DoorLocked, DoorLockedHorz]);
@@ -433,9 +436,16 @@ onInput("d", () => {
   getFirst(Player).x += 1;
 });
 
-/* I'm too lazy to replay my entire game every edit lol */
+// I'm too lazy to replay my entire game every edit lol
 onInput("j", () => {
   nextLevel();
+});
+
+onInput("l", () => { // Start game!
+  if (tutorial) {
+    setMap(levels[0]);
+    tutorial = false;
+  }
 });
 
 function setCaught() {
@@ -448,6 +458,7 @@ function setCaught() {
 
 /* Credit for this function: Tutroial :D */
 function nextLevel() {
+  let game = setInterval(updateGame, 1000);
   level = level + 1;
 
   const currentLevel = levels[level];
@@ -462,7 +473,6 @@ function nextLevel() {
   }
 }
 
-let clear = false;
 
 /* After ALL THAT SETUP ABOVE ME comes the fun part! */
 
@@ -499,29 +509,39 @@ afterInput(() => {
   }
 })
 
-/* Enable and disable all lasers every 2 sec */
+/* Enable and disable all lasers every 1 sec, run timer */
 /* TODO: Ability to alternate lasers */
 /* CREDIT TIMER: Thanks to https://sprig.hackclub.com/~/pIrXiIjFINorvL2bCYM9! */
 function updateGame() {
-  timerText = addText(`Escape in ${timer} secs`, { x: 1, y: 0, color: color`2` });
-  if (clear) {
+  timerText = addText(`Escape in ${timer} secs`, { x: 1, y: 0, color: color`2`});
+  
+  try { // Convert all horizontal off lasers to on
     getAll("j").forEach(sprite => {
       sprite.type = "h";
     });
-
-    getAll("o").forEach(sprite => {
+  } catch (error) {
+    console.log(error);
+  }
+  try { // Convert all vertical off lasers to on
+    getAll("c").forEach(sprite => {
       sprite.type = "v";
     });
-    clear = false;
-  } else {
+  } catch (error) {
+    console.log(error);
+  }
+  try { // Convert all horizontal on lasers to offj
     getAll("h").forEach(sprite => {
       sprite.type = "j";
     });
-
+  } catch (error) {
+    console.log(error);
+  }
+  try { // Convert all vertical on lasers to off
     getAll("v").forEach(sprite => {
-      sprite.type = "o";
+      sprite.type = "c";
     });
-    clear = true;
+  } catch (error) {
+    console.log(error);
   }
   const items_insides = getTile(getFirst("p").x, getFirst("p").y);
   for (let sprite of items_insides) {
@@ -534,5 +554,3 @@ function updateGame() {
   timer--;
   }
 }
-
-let game = setInterval(updateGame, 1000);
