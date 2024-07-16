@@ -2,9 +2,9 @@
 First time? Check out the tutorial game:
 https://sprig.hackclub.com/gallery/getting_started
 
-@title: 
-@author: 
-@tags: []
+@title: Maze Game
+@author: Felix Gao
+@tags: ["Maze", "Idk"]
 @addedOn: 2024-00-00
 */
 
@@ -17,8 +17,10 @@ const laserVertOff = "o";
 const laserHorz = "h";
 const laserHorzOff = "f";
 
+const LevelUp = "l"
+
 setLegend(
-  [ player, bitmap`
+  [player, bitmap`
 ................
 ................
 ................
@@ -34,8 +36,8 @@ setLegend(
 ...666666666....
 ................
 ................
-................` ],
-  [ wall, bitmap`
+................`],
+  [wall, bitmap`
 0000000000000000
 0000000000000000
 0000000000000000
@@ -51,8 +53,8 @@ setLegend(
 0000000000000000
 0000000000000000
 0000000000000000
-0000000000000000` ],
-  [ laserVert, bitmap`
+0000000000000000`],
+  [laserVert, bitmap`
 ................
 ................
 ................
@@ -69,7 +71,7 @@ L..............L
 ................
 ................
 ................`],
-  [ laserVertOff, bitmap`
+  [laserVertOff, bitmap`
 ................
 ................
 ................
@@ -86,7 +88,7 @@ L..............L
 ................
 ................
 ................`],
-  [ laserHorz, bitmap`
+  [laserHorz, bitmap`
 ......LLLLL.....
 .......111......
 ........3.......
@@ -103,7 +105,7 @@ L..............L
 ........3.......
 .......111......
 ......LLLLL.....`],
-  [ laserHorzOff, bitmap`
+  [laserHorzOff, bitmap`
 ......LLLLL.....
 .......111......
 ................
@@ -120,7 +122,24 @@ L..............L
 ................
 .......111......
 ......LLLLL.....`],
-  
+  [LevelUp, bitmap`
+................
+.DDD..DDDD..DDD.
+.D............D.
+.D.....DD.....D.
+.......DD.......
+.......DD.......
+.D.....DD.....D.
+.D.....DD.....D.
+.D.....DD.....D.
+.D..DD.DD.DD..D.
+.....DDDDDD.....
+......DDDD......
+.D.....DD.....D.
+.D............D.
+.DDD..DDDD..DDD.
+................`],
+
 
 )
 
@@ -138,18 +157,28 @@ wwvwwwwwwww.
 ...w.w..w.w.
 ..pw.ww...w.
 wwww.wwww...
-........wwww`
+l.......wwww`
+]
+
+const death = [
+  map`
+.......
+.......
+.......
+.......
+...p...
+wwwwwww`
 ]
 
 setMap(levels[level])
 
 setPushables({
-  [ player ]: []
+  [player]: []
 })
 
 // inputs for player movement control
 onInput("w", () => {
-  getFirst(player).y -= 1; 
+  getFirst(player).y -= 1;
 });
 
 onInput("a", () => {
@@ -164,20 +193,45 @@ onInput("d", () => {
   getFirst(player).x += 1;
 });
 
+let clear = false;
 
-afterInput(() => {
-})
+/* Enable and disable all lasers every 2 sec */
+function updateGame() {
+  if (clear) {
+    getAll("f").forEach(sprite => {
+      sprite.type = "h";
+    });
 
+    getAll("o").forEach(sprite => {
+      sprite.type = "v";
+    });
+    clear = false;
+  } else {
+    getAll("h").forEach(sprite => {
+      sprite.type = "f";
+    });
 
-const updateGame = () => {
-  let sprites = getAll("h");
-
-  // Convert each sprite to the new version
-  sprites.forEach(sprite => {
-    // Update the sprite type to the new version
-    sprite.type = "f";
-  });
+    getAll("v").forEach(sprite => {
+      sprite.type = "o";
+    });
+    clear = true;
+  }
 }
 
-// Set up game loop to update every 1000 milliseconds (1 second)
-const gameLoop = setInterval(updateGame, 1000);
+function setDeath(cause) {
+  addText("You died! RIP!", options = { x: 3, y: 6, color: color`3` })
+  setMap(death[0]);
+}
+
+/* After ALL THAT SETUP ABOVE ME comes the fun part! */
+
+afterInput(() => {
+  const items_insides = getTile(getFirst("p").x, getFirst("p").y);
+  for (let sprite of items_insides) {
+      if (sprite["_type"] == "h" || sprite["_type"] == "v") {
+        setDeath()
+      }
+}
+})
+
+setInterval(updateGame, 1000);
