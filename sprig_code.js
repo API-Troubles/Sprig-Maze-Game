@@ -8,16 +8,22 @@ https://sprig.hackclub.com/gallery/getting_started
 @addedOn: 2024-00-00
 */
 
+/* US! */
 const player = "p";
-const wall = "w";
 
+/* Enemies! */
 const laserVert = "v";
 const laserVertOff = "o";
 
 const laserHorz = "h";
 const laserHorzOff = "f";
 
+/* Misc */
 const LevelUp = "l"
+const Wall = "w";
+const Door = "d";
+const DoorLocked = "z"; /* This door is never unlockable */
+const Key = "k";
 
 setLegend(
   [player, bitmap`
@@ -37,7 +43,7 @@ setLegend(
 ................
 ................
 ................`],
-  [wall, bitmap`
+  [Wall, bitmap`
 0000000000000000
 0000000000000000
 0000000000000000
@@ -139,39 +145,126 @@ L..............L
 .D............D.
 .DDD..DDDD..DDD.
 ................`],
-
-
+  [Door, bitmap`
+....LLLLLLL.....
+....L11111L.....
+....L11111L.....
+....L11111L.....
+....L11111L.....
+....L11111L.....
+....L11111L.....
+....L11111L.....
+....L11111L.....
+....L11111L.....
+....L11111L.....
+....L11111L.....
+....L11111L.....
+....L11111L.....
+....L11111L.....
+....LLLLLLL.....`],
+  [DoorLocked, bitmap`
+.....LLLLLLL....
+.....L11111L....
+.....L11111L....
+.....L11111L....
+.....L16661L....
+.....L61116L....
+.....L61116L....
+.....L16661L....
+.....L11611L....
+.....L11661L....
+.....L11611L....
+.....L11661L....
+.....L11111L....
+.....L11111L....
+.....L11111L....
+.....LLLLLLL....`],
+  [Key, bitmap`
+................
+................
+................
+................
+.......666......
+......6...6.....
+......6...6.....
+.......666......
+........6.......
+........66......
+........6.......
+........66......
+................
+................
+................
+................`],
 )
 
-setSolids([player, wall]);
+function setDeath() {
+  addText("You died! RIP!", options = { x: 3, y: 6, color: color`3` })
+  setMap(death[0]);
+}
 
+/* Credit for this function: Tutroial :D */
+function nextLevel() {
+    level = level + 1;
+
+    const currentLevel = levels[level];
+
+    if (currentLevel !== undefined) {
+      setMap(currentLevel);
+    } else {
+      addText("You WIN!", { y: 4, color: color`D` });
+    }
+}
+  
+/* Setup levels and different misc. screens here */
+/* Using 13x10 size for most maps */
+/* NOTE SELF: Each level should have the player and a checkpoint */
 let level = 0
 const levels = [
   map`
-ww...w...w..
-...w.wwwww.w
-.w.w...h....
-wwvwwwwwwww.
-...w.h......
-.www.wwwwvww
-...w.w..w.w.
-..pw.ww...w.
-wwww.wwww...
-l.......wwww`
+ww...w...w...
+...w.wwwww.ww
+.w.w...h.....
+wwvwwwwwwwww.
+...w.h.......
+.www.wwwwvwww
+...w.w..w.w..
+..pw.ww...w.w
+wwww.wwww....
+l.......wwwww`,
+  map`
+...........k.
+.............
+wwww.www.wwww
+..........w..
+..........d..
+..........w..
+.www.www.ww..
+.w...w....w..
+.w...w....w..
+pw...w....w.l`
 ]
 
 const death = [
   map`
-.......
-.......
-.......
-.......
-...p...
-wwwwwww`
+wwwwwwwwwwwww
+w...........w
+w...........w
+w...........w
+w...........w
+w...........w
+w...........w
+w...........w
+w..p........w
+wwwwwwwwwwwww`
 ]
+
+/* Misc settings */
+var HasKey = false;
 
 setMap(levels[level])
 
+setSolids([player, Wall, Door]);
 setPushables({
   [player]: []
 })
@@ -193,7 +286,39 @@ onInput("d", () => {
   getFirst(player).x += 1;
 });
 
+/* I'm too lazy to rebeat my entire game every edit lol */
+onInput("j", () => {
+  nextLevel();
+});
+
 let clear = false;
+
+/* After ALL THAT SETUP ABOVE ME comes the fun part! */
+
+afterInput(() => {
+
+  /* If touch active laser then player die */
+  const items_insides = getTile(getFirst("p").x, getFirst("p").y);
+  for (let sprite of items_insides) {
+      if (sprite["_type"] == "h" || sprite["_type"] == "v") {
+        setDeath()
+      }
+  }
+  /* If touch key then add key to inv */
+  for (let sprite of items_insides) {
+      if (sprite["_type"] == "k") {
+        getFirst("d").remove();
+        sprite.remove();
+      }
+  }
+
+  /* If touch checkpoint promote next level! */
+  for (let sprite of items_insides) {
+      if (sprite["_type"] == "l") {
+        nextLevel();
+      }
+  }
+})
 
 /* Enable and disable all lasers every 2 sec */
 function updateGame() {
@@ -216,22 +341,12 @@ function updateGame() {
     });
     clear = true;
   }
-}
-
-function setDeath(cause) {
-  addText("You died! RIP!", options = { x: 3, y: 6, color: color`3` })
-  setMap(death[0]);
-}
-
-/* After ALL THAT SETUP ABOVE ME comes the fun part! */
-
-afterInput(() => {
   const items_insides = getTile(getFirst("p").x, getFirst("p").y);
   for (let sprite of items_insides) {
       if (sprite["_type"] == "h" || sprite["_type"] == "v") {
         setDeath()
       }
+  }
 }
-})
-
+  
 setInterval(updateGame, 1000);
