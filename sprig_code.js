@@ -7,6 +7,32 @@ https://sprig.hackclub.com/gallery/getting_started
 @tags: ["Puzzle", "Prision"]
 @addedOn: 2024-00-00
 
+
+/* People models! */
+const Player = "p";
+const Guard = "g";
+
+/* Misc */
+const LevelUp = "l"
+const Wall = "w";
+
+/* Lasers! */
+const laserVert = "v";
+const laserVertOff = "c";
+
+const laserHorz = "h";
+const laserHorzOff = "j";
+
+/* This door is never unlockable */
+const Door = "d";
+const DoorHorz = "s";
+  
+const DoorLocked = "z";
+const DoorLockedHorz = "x";
+
+const Key = "k";
+const Objective = "m";
+
 /* Music! */
 const music = {
   caught: tune`
@@ -56,32 +82,6 @@ const music = {
 410.958904109589: C4-410.958904109589 + C5^410.958904109589,
 10684.931506849314`
 }
-
-
-/* People models! */
-const Player = "p";
-const Guard = "g";
-
-/* Enemies! */
-const laserVert = "v";
-const laserVertOff = "o";
-
-const laserHorz = "h";
-const laserHorzOff = "f";
-
-/* Misc */
-const LevelUp = "l"
-const Wall = "w";
-
-/* This door is never unlockable */
-const Door = "d";
-const DoorHorz = "a";
-  
-const DoorLocked = "z";
-const DoorLockedHorz = "x";
-
-const Key = "k";
-const Objective = "m";
 
 setLegend(
   [Player, bitmap`
@@ -324,30 +324,6 @@ LLLLLLL6LLLLLLLL
 ................`]
 )
 
-function setCaught() {
-  playback.end();
-  playTune(music.caught);
-  addText("You got caught!", options = { x: 3, y: 6, color: color`3` });
-  clearInterval(timer);
-  setMap(misc[0]);
-  clearInterval(game);
-}
-
-/* Credit for this function: Tutroial :D */
-function nextLevel() {
-  level = level + 1;
-
-  const currentLevel = levels[level];
-
-  if (currentLevel !== undefined) {
-    setMap(currentLevel);
-  } else {
-    addText("You WIN!", { y: 4, color: color`D` });
-    playback.end();
-    playTune(music.victory);
-  }
-}
-
 /* Setup levels and different misc. screens here */
 /* Using 13x9 size for most maps */
 /* NOTE SELF: Each level should have the player and a checkpoint */
@@ -386,8 +362,8 @@ wwwwwwxw..w..
 llwwwwww..h..`
 ]
 
-const misc = [
-  map`
+const misc = {
+  lost: map`
 wwwwwwwwwwwww
 w...........w
 w...........w
@@ -398,8 +374,17 @@ w...w...w...w
 w...w...w...w
 w..pw...w...w
 wwwwwwwwwwwww`,
-  map``,
-  map`
+  victory: map`
+.............
+.............
+.............
+.............
+.............
+.............
+.............
+.............
+.............`,
+  tutorial: map`
 .............
 .p...........
 .............
@@ -409,12 +394,18 @@ wwwwwwwwwwwww`,
 .............
 .k...........
 .............`
-]
+}
 
 /* Misc settings */
 var HasKey = false;
 
-setMap(levels[level])
+setMap(misc.tutorial)
+let x_align = 4;
+addText("< You!", options = { x: x_align, y: 3, color: color`0` });
+addText("< Avoid lasers", options = { x: x_align, y: 6, color: color`0` });
+addText("< Locked doors", options = { x: x_align, y: 9, color: color`0` });
+addText("< Key = open", options = { x: x_align, y: 12, color: color`0` });
+
 
 setSolids([Player, Wall, Door, DoorHorz, DoorLocked, DoorLockedHorz]);
 setPushables({
@@ -423,7 +414,6 @@ setPushables({
 
 const playback = playTune(music.background, Infinity)
 
-// 10 minute timer!
 let timer = 600;
 
 // inputs for player movement control
@@ -443,10 +433,34 @@ onInput("d", () => {
   getFirst(Player).x += 1;
 });
 
-/* I'm too lazy to repeat my entire game every edit lol */
+/* I'm too lazy to replay my entire game every edit lol */
 onInput("j", () => {
   nextLevel();
 });
+
+function setCaught() {
+  playback.end();
+  playTune(music.caught);
+  addText("You got caught!", options = { x: 3, y: 6, color: color`3` });
+  setMap(misc.caught);
+  clearInterval(game);
+}
+
+/* Credit for this function: Tutroial :D */
+function nextLevel() {
+  level = level + 1;
+
+  const currentLevel = levels[level];
+
+  if (currentLevel !== undefined) {
+    setMap(currentLevel);
+  } else {
+    addText("You WIN!", { y: 4, color: color`D` });
+    playback.end();
+    playTune(music.victory);
+    setMap(misc.victory);
+  }
+}
 
 let clear = false;
 
@@ -491,7 +505,7 @@ afterInput(() => {
 function updateGame() {
   timerText = addText(`Escape in ${timer} secs`, { x: 1, y: 0, color: color`2` });
   if (clear) {
-    getAll("f").forEach(sprite => {
+    getAll("j").forEach(sprite => {
       sprite.type = "h";
     });
 
@@ -501,7 +515,7 @@ function updateGame() {
     clear = false;
   } else {
     getAll("h").forEach(sprite => {
-      sprite.type = "f";
+      sprite.type = "j";
     });
 
     getAll("v").forEach(sprite => {
