@@ -4,7 +4,7 @@ https://sprig.hackclub.com/gallery/getting_started
 
 @title: Maze Game
 @author: Felix Gao
-@tags: ["Maze", "Idk"]
+@tags: ["Puzzle", "Prision"]
 @addedOn: 2024-00-00
 
 /* Music! */
@@ -46,12 +46,21 @@ const music = {
 500: C5-500 + A4~500 + G5~500 + F5-500,
 500: G4/500 + F5-500,
 500: G4/500 + G5~500,
-500: D4-500 + B4/500`
+500: D4-500 + B4/500`,
+  victory: tune`
+410.958904109589: E4-410.958904109589,
+410.958904109589: F4-410.958904109589,
+410.958904109589: B4-410.958904109589,
+410.958904109589: C5-410.958904109589 + C4^410.958904109589,
+410.958904109589,
+410.958904109589: C4-410.958904109589 + C5^410.958904109589,
+10684.931506849314`
 }
 
 
-/* US! */
-const player = "p";
+/* People models! */
+const Player = "p";
+const Guard = "g";
 
 /* Enemies! */
 const laserVert = "v";
@@ -72,23 +81,24 @@ const DoorLocked = "z";
 const DoorLockedHorz = "x";
 
 const Key = "k";
+const Objective = "m";
 
 setLegend(
-  [player, bitmap`
+  [Player, bitmap`
 ................
 ................
-................
-...666666666....
-...666666666....
-...666666666....
-...666666666....
-...666666666....
-...666666666....
-...666666666....
-...666666666....
-...666666666....
-...666666666....
-................
+..666666666666..
+..666666666666..
+..666666666666..
+..666666666666..
+..666666006006..
+..666666006006..
+..666666666666..
+..666666666666..
+..666666666666..
+..666666666666..
+..666666666666..
+..666666666666..
 ................
 ................`],
   [Wall, bitmap`
@@ -266,22 +276,56 @@ LLLLLLL6LLLLLLLL
 ................
 ................
 ................
-.......666......
-......6...6.....
-......6...6.....
-.......666......
-........6.......
-........66......
-........6.......
-........66......
+......999.......
+.....9...9......
+.....9...9......
+......999.......
+.......9........
+.......99.......
+.......9........
+.......99.......
 ................
 ................
 ................
 ................`],
+  [Objective, bitmap`
+................
+................
+.......99.......
+.......99.......
+.......99.......
+.......99.......
+.......99.......
+.......99.......
+.......99.......
+.......99.......
+................
+.......99.......
+.......99.......
+................
+................
+................`],
+  [Guard, bitmap`
+................
+................
+..333333333333..
+..333333333333..
+..333333333333..
+..333333003003..
+..333333333333..
+..333333333333..
+..333333333333..
+..333333333333..
+..333333333333..
+..333333333333..
+..333333333333..
+..333333333333..
+................
+................`]
 )
 
 function setCaught() {
-  playback.end()
+  playback.end();
   playTune(music.caught);
   addText("You got caught!", options = { x: 3, y: 6, color: color`3` });
   clearInterval(timer);
@@ -299,6 +343,8 @@ function nextLevel() {
     setMap(currentLevel);
   } else {
     addText("You WIN!", { y: 4, color: color`D` });
+    playback.end();
+    playTune(music.victory);
   }
 }
 
@@ -329,16 +375,15 @@ w...w...w....
 w...w...w....
 w...w...w....`,
   map`
-...w..h...w..
-...w..w...w.k
-...w..w...w..
-...h..w...h..
-vvwwwwwwwwwww
-.............
-.............
-wwwwwwvvwwwwx
-........w....
-p.......w.l..`
+....w.....w.k
+....w.....w..
+wwwawwwwaaw..
+.......h..w..
+p......h..wvv
+wwwwwwxw..w..
+.......w..w..
+.......w..h..
+llwwwwww..h..`
 ]
 
 const misc = [
@@ -352,7 +397,18 @@ wwwawwwawwwaw
 w...w...w...w
 w...w...w...w
 w..pw...w...w
-wwwwwwwwwwwww`
+wwwwwwwwwwwww`,
+  map``,
+  map`
+.............
+.p...........
+.............
+.h...........
+.............
+.z...........
+.............
+.k...........
+.............`
 ]
 
 /* Misc settings */
@@ -360,9 +416,9 @@ var HasKey = false;
 
 setMap(levels[level])
 
-setSolids([player, Wall, Door, DoorHorz, DoorLocked, DoorLockedHorz]);
+setSolids([Player, Wall, Door, DoorHorz, DoorLocked, DoorLockedHorz]);
 setPushables({
-  [player]: []
+  [Player]: []
 })
 
 const playback = playTune(music.background, Infinity)
@@ -372,19 +428,19 @@ let timer = 600;
 
 // inputs for player movement control
 onInput("w", () => {
-  getFirst(player).y -= 1;
+  getFirst(Player).y -= 1;
 });
 
 onInput("a", () => {
-  getFirst(player).x -= 1;
+  getFirst(Player).x -= 1;
 });
 
 onInput("s", () => {
-  getFirst(player).y += 1;
+  getFirst(Player).y += 1;
 });
 
 onInput("d", () => {
-  getFirst(player).x += 1;
+  getFirst(Player).x += 1;
 });
 
 /* I'm too lazy to repeat my entire game every edit lol */
@@ -433,7 +489,7 @@ afterInput(() => {
 /* TODO: Ability to alternate lasers */
 /* CREDIT TIMER: Thanks to https://sprig.hackclub.com/~/pIrXiIjFINorvL2bCYM9! */
 function updateGame() {
-  timerText = addText(`Escape in ${timer} sec`, { x: 1, y: 0, color: color`2` });
+  timerText = addText(`Escape in ${timer} secs`, { x: 1, y: 0, color: color`2` });
   if (clear) {
     getAll("f").forEach(sprite => {
       sprite.type = "h";
