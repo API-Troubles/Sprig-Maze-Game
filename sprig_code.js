@@ -21,8 +21,14 @@ const laserHorzOff = "f";
 /* Misc */
 const LevelUp = "l"
 const Wall = "w";
+
+/* This door is never unlockable */
 const Door = "d";
-const DoorLocked = "z"; /* This door is never unlockable */
+const DoorHorz = "a";
+  
+const DoorLocked = "z";
+const DoorLockedHorz = "x";
+
 const Key = "k";
 
 setLegend(
@@ -162,6 +168,23 @@ L..............L
 ....L11111L.....
 ....L11111L.....
 ....LLLLLLL.....`],
+  [DoorHorz, bitmap`
+................
+................
+................
+................
+LLLLLLLLLLLLLLLL
+L11111111111111L
+L11111111111111L
+L11111111111111L
+L11111111111111L
+L11111111111111L
+LLLLLLLLLLLLLLLL
+................
+................
+................
+................
+................`],
   [DoorLocked, bitmap`
 .....LLLLLLL....
 .....L11111L....
@@ -179,6 +202,23 @@ L..............L
 .....L11111L....
 .....L11111L....
 .....LLLLLLL....`],
+  [DoorLockedHorz, bitmap`
+................
+................
+................
+................
+................
+LLLLLLL66LLLLLLL
+L11111611611111L
+L11111611611111L
+L11111166111111L
+L11111161111111L
+L11111166111111L
+LLLLLLL6LLLLLLLL
+.......66.......
+................
+................
+................`],
   [Key, bitmap`
 ................
 ................
@@ -205,17 +245,17 @@ function setDeath() {
 
 /* Credit for this function: Tutroial :D */
 function nextLevel() {
-    level = level + 1;
+  level = level + 1;
 
-    const currentLevel = levels[level];
+  const currentLevel = levels[level];
 
-    if (currentLevel !== undefined) {
-      setMap(currentLevel);
-    } else {
-      addText("You WIN!", { y: 4, color: color`D` });
-    }
+  if (currentLevel !== undefined) {
+    setMap(currentLevel);
+  } else {
+    addText("You WIN!", { y: 4, color: color`D` });
+  }
 }
-  
+
 /* Setup levels and different misc. screens here */
 /* Using 13x10 size for most maps */
 /* NOTE SELF: Each level should have the player and a checkpoint */
@@ -235,11 +275,11 @@ l.......wwwww`,
   map`
 ...........k.
 .............
-wwww.www.wwww
+wwwwxwww.wwww
 ..........w..
-..........d..
+..........z..
 ..........w..
-.www.www.ww..
+.wwwxwwwxww..
 .w...w....w..
 .w...w....w..
 pw...w....w.l`
@@ -300,23 +340,28 @@ afterInput(() => {
   /* If touch active laser then player die */
   const items_insides = getTile(getFirst("p").x, getFirst("p").y);
   for (let sprite of items_insides) {
-      if (sprite["_type"] == "h" || sprite["_type"] == "v") {
-        setDeath()
-      }
+    if (sprite["_type"] == "h" || sprite["_type"] == "v") {
+      setDeath()
+    }
   }
   /* If touch key then add key to inv */
   for (let sprite of items_insides) {
-      if (sprite["_type"] == "k") {
-        getFirst("d").remove();
-        sprite.remove();
+    if (sprite["_type"] == "k") {
+      try {
+        getFirst("z").remove();
+        getFirst("x").remove();
+      } catch (error) {
+        console.log(error);
       }
+      sprite.remove();
+    }
   }
 
   /* If touch checkpoint promote next level! */
   for (let sprite of items_insides) {
-      if (sprite["_type"] == "l") {
-        nextLevel();
-      }
+    if (sprite["_type"] == "l") {
+      nextLevel();
+    }
   }
 })
 
@@ -343,10 +388,10 @@ function updateGame() {
   }
   const items_insides = getTile(getFirst("p").x, getFirst("p").y);
   for (let sprite of items_insides) {
-      if (sprite["_type"] == "h" || sprite["_type"] == "v") {
-        setDeath()
-      }
+    if (sprite["_type"] == "h" || sprite["_type"] == "v") {
+      setDeath()
+    }
   }
 }
-  
+
 setInterval(updateGame, 1000);
