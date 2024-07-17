@@ -12,7 +12,9 @@ https://sprig.hackclub.com/gallery/getting_started
 // People lol
 const player = "p";
 const player2 = "o";
+
 const guard = "g";
+const guard2 = "f";
 
 // Misc
 const levelUp = "l"
@@ -69,6 +71,40 @@ setLegend(
 ..666666666666..
 ..666666666666..
 ..666666666666..
+................
+................`],
+  [guard, bitmap`
+................
+................
+..333333333333..
+..333333333333..
+..333333333333..
+..333333003003..
+..333333003003..
+..333333333333..
+..333333333333..
+..333333333333..
+..333333333333..
+..333333333333..
+..333333333333..
+..333333333333..
+................
+................`],
+  [guard2, bitmap`
+................
+................
+..333333333333..
+..333333333333..
+..333333333333..
+..300300333333..
+..300300333333..
+..333333333333..
+..333333333333..
+..333333333333..
+..333333333333..
+..333333333333..
+..333333333333..
+..333333333333..
 ................
 ................`],
   [wall, bitmap`
@@ -275,23 +311,6 @@ LLLLLLL6LLLLLLLL
 .......99.......
 ................
 ................`],
-  [guard, bitmap`
-................
-................
-..333333333333..
-..333333333333..
-..333333333333..
-..333333003003..
-..333333333333..
-..333333333333..
-..333333333333..
-..333333333333..
-..333333333333..
-..333333333333..
-..333333333333..
-..333333333333..
-................
-................`],
   [hammer, bitmap`
 ................
 .....111........
@@ -385,9 +404,9 @@ wwwwwvvvwwwww
 ....w...w....
 ....w...w....
 ....w...w....
-....w...w....
-....wlllw....`,
-  map`
+....wsssw....
+....w...w....`,
+/*  map`
 ....w...w....
 ....w...wwwww
 ....wvvvw.m.w
@@ -396,7 +415,7 @@ w...h...wwxww
 w...w.......w
 w.k.w..g....w
 w...w.......w
-wwwwwwwwwwwww`,
+wwwwwwwwwwwww`, */
   map`
 ...w....w....
 ...w..k.w....
@@ -406,7 +425,18 @@ wwwwvwwwwwwww
 ..h........zl
 wvwwwsswwwwww
 ...w....w....
-...w....w....`
+...w....w....`,
+  map`
+...h...hz...l
+...h.g.hz...l
+...h...hz...l
+wvwwvvvwwwwww
+...w...w.kw..
+...w...w..w..
+...h...h..d..
+...w...w..w..
+...w...w..w..`,
+  map``
   
 ]
 
@@ -426,9 +456,14 @@ const guardPath = [
 ]
 
 const screenText = [
-  [{}, {}, {}],
-  null,
-  [{}]
+  [
+    ["Quick! >>>", { x: 4, y: 3, color: color`0`}]
+  ], [
+    ["Watch out!", { x: 2, y: 3, color: color`0`}],
+    ["lasers! >", { x: 2, y: 5, color: color`0`}]
+  ], [
+    ["Guard!", { x: 1, y: 3, color: color`0`}]
+  ]
 ]
 
 const misc = {
@@ -524,16 +559,16 @@ const music = {
 10684.931506849314`
 }
 
-var hasKey = false;
-var tutorial = true;
+let tutorial = true;
+let restart = false;
 let game = null;
 let guardAI = null;
 let iterator = null;
 let timer = 600;
 
-const playback = playTune(music.background, Infinity);
+let playback = playTune(music.background, Infinity);
 
-setSolids([player, player2, wall, door, doorHorz, doorLocked, doorLockedHorz]);
+setSolids([player, player2, wall, door, doorHorz, doorLocked, doorLockedHorz, guard, guard2]);
 
 setPushables({
   [player]: []
@@ -559,7 +594,7 @@ let tutorialText = [
 setMap(misc.tutorialFriendly);
 tutorialText[0].forEach((text) => addText(text[0], options=text[1]));
 addText("Press 'L' to play!", options = { x: 1, y: 14, color: color`0` });
-e = setInterval(tutorialAnimation, 4000);
+let tutorialScreen = setInterval(tutorialAnimation, 4000);
 
 let tutorialFlag = false;
 function tutorialAnimation() {
@@ -627,16 +662,26 @@ onInput("j", () => {
   nextLevel();
 });
 
-onInput("l", () => { // Start da game alr!
-  if (tutorial) {
+onInput("l", () => {
+  if (tutorial) { // Start the game!
+    clearInterval(tutorialScreen);
+    setMap(levels[0]);
+    clearText();
+    game = setInterval(updateGame, 1000);
+    guardAI = setInterval(runGuard, 2000);
+    iterator = cyclicIteration(guardPath[level]);
+    screenText[0].forEach((text) => addText(text[0], options=text[1]));
+    tutorial = false;
+  } else if (restart) { // Restart game if caught
+    level = 0;
+    var timer = 600;
     setMap(levels[0]);
     clearText()
     game = setInterval(updateGame, 1000);
     guardAI = setInterval(runGuard, 2000);
-    var timer = 600;
     iterator = cyclicIteration(guardPath[level]);
-    console.log(iterator);
-    tutorial = false;
+    playback = playTune(music.background, Infinity);
+    restart = false;
   }
 });
 
@@ -662,6 +707,19 @@ function getPlayer() {
   return {x: playerModel.x, y: playerModel.y};
 }
 
+function getGuard() {
+  let GuardModel = null;
+  if (getFirst("p") !== undefined) {
+      GuardModel = getFirst("g");
+  } else if (getFirst("o") !== undefined) {
+      GuardModel = getFirst("o");
+  } else {
+    return null;
+  }
+  return {x: GuardModel.x, y: GuardModel.y};
+}
+
+
 // Iterate infinitely front and back
 // CREDIT: ChatGPT
 function cyclicIteration(array) {
@@ -670,6 +728,9 @@ function cyclicIteration(array) {
   }
   let index = 0;
   let direction = 1;
+
+  // Store the last move to calculate guard NPC animation
+  let lastMove = null;
 
   return {
     next: function() {
@@ -681,8 +742,29 @@ function cyclicIteration(array) {
 
       const currentValue = array[index];
       index += direction;
+      
+      if (lastMove == null) {
+        lastMove = currentValue;
+        console.log(`nothing found so lets make it! ${lastMove}`)
+        return {value: currentValue, direction: "nothing yet"};
+      }
+      
+      let difference = lastMove[0] - currentValue[0];
+      console.log(`oo a difference! ${difference}`)
+      if (difference >= 1) { // If the x is increasing / moving left <<<
+        const direction = "left";
+        console.log("confirm left!");
+      } else if (difference <= -1) { // If the x is decreasing / moving right >>>
+        const direction = "right";
+        console.log("confirm right!");
+      } else { // else then not moving left or right
+        const direction = "up/down"
+      }
 
-      return {value: currentValue};
+      lastMove = currentValue;
+      console.log("lets final check!")
+      console.log({value: currentValue, direction: direction});
+      return {value: currentValue, direction: direction};
     }
   };
 }
@@ -697,20 +779,26 @@ function setCaught() {
   setMap(misc.lost);
   clearInterval(game);
   clearInterval(guardAI);
-  tutorial = true;
+  restart = true;
   level = 0;
 }
 
 /* Credit for this function: Tutorial :D */
 function nextLevel() {
-  level = level + 1;
+  clearText();
+  level++;
 
   const currentLevel = levels[level];
 
   if (currentLevel !== undefined) {
     iterator = cyclicIteration(guardPath[level]);
     setMap(currentLevel);
-  } else {
+    console.log(screenText);
+    if (screenText[level] != null) {
+      console.log(`okie mister ${screenText[level]}`)
+      screenText[level].forEach((text) => addText(text[0], options=text[1]));
+    }
+  } else { // No more maps to load so victory!
     addText("You WIN!", { y: 4, color: color`D` });
     playback.end();
     playTune(music.victory);
@@ -724,9 +812,26 @@ function nextLevel() {
 // Guard logic
 function runGuard() {
   if (iterator !== null) {
-    const coords = iterator.next().value;
-    getFirst("g").x = coords[0];
-    getFirst("g").y = coords[1];
+    const coords = iterator.next();
+    getFirst("g").x = coords.value[0];
+    getFirst("g").y = coords.value[1];
+
+    if (coords == "left") {
+      console.log("left!");
+      try {
+        getFirst("g").type = "f";
+      } catch (error) {
+        console.log(error);
+      }
+      getFirst("g").type = "f";
+    } else if (coords == "right") {
+      console.log("right!");
+      try {
+        getFirst("f").type = "g";
+      } catch (error) {
+        console.log(error);
+      }
+    }
   }
 }
 
