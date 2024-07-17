@@ -461,7 +461,17 @@ const guardPath = [
     [5,4],
     [4,4],
     [3,4]
-  ]
+  ],
+  [
+    [6,5],
+    [7,5],
+    [8,5],
+    [9,5],
+    [10,5],
+    [11,5],
+    [12,5]
+  ],
+  
 ]
 
 const misc = {
@@ -517,11 +527,12 @@ addText("Press 'L' to start!", options = { x: 1, y: 14, color: color`0` });
 setSolids([player, player2, guard, wall, door, doorHorz, doorLocked, doorLockedHorz]);
 setPushables({
   [player]: []
-})
+});
 
-const playback = playTune(music.background, Infinity)
+const playback = playTune(music.background, Infinity);
 
 let timer = 600;
+
 
 // inputs for player movement control
 onInput("w", () => {
@@ -584,12 +595,14 @@ onInput("l", () => { // Start game!
   }
 });
 
+// Obtain the player, needed as we use 2 player models
+// One for left eyes, another for right eyes, lol
 function getPlayerSprite() {
   let playerModel = null;
   if (getFirst("p") !== undefined) {
       playerModel = getFirst("p");
   } else if (getFirst("o") !== undefined) {
-      playerModel = getFirst("p");
+      playerModel = getFirst("o");
   } else {
     throw new Error('No player sprite');
   }
@@ -597,6 +610,7 @@ function getPlayerSprite() {
   return {x: playerModel.x, y: playerModel.y};
 }
 
+// Check if a block has a certain sprite
 function blockHas(block, item) {
   for (let sprite of block) {
     if (sprite.type == item) {
@@ -607,11 +621,10 @@ function blockHas(block, item) {
 }
 
 
-
 // Iterate infinitely front and back
 // CREDIT: ChatGPT
 function cyclicIteration(array) {
-  if (array === null) {
+  if (array == null) {
     return null
   }
   let index = 0;
@@ -676,37 +689,34 @@ function nextLevel() {
 /* After ALL THAT SETUP ABOVE ME comes the fun part! */
 
 afterInput(() => {
-  // If touch active laser then player die 
   let playerSprite = getPlayerSprite()
-  let itemsInside = getTile(player_sprite.x, player_sprite.y);
-  
-  if (blockHas(itemsInside, "h") || blockHas(itemsInside, "h")) {
+  let itemsInside = getTile(playerSprite.x, playerSprite.y);
+
+  // If touching lasers then player caught
+  if (blockHas(itemsInside, "h") || blockHas(itemsInside, "v")) {
     setCaught()
   }
+  
   /* If touch key then open all doors*/
   if (blockHas(itemsInside, "k")) {
     try {
-      //getAll("z").forEach((door) => console.log(element));
-      getFirst("z").remove();
+      getAll("z").forEach((door) => door.remove());
     } catch (error) {
       console.log(error);
     }
     try {
-      getFirst("x").remove();
+      getAll("x").forEach((door) => door.remove());
     } catch (error) {
       console.log(error);
     }
-    sprite.remove();
+    getFirst("k").remove();
   }
-}
 
-  /* If touch checkpoint promote next level! */
-  for (let sprite of items_insides) {
-    if (sprite.type == "l") {
-      nextLevel();
-    }
+  /* If touch checkpoint then promote next level! */
+  if (blockHas(itemsInside, "l")) {
+    nextLevel();
   }
-})
+});
 
 /* Enable and disable all lasers every 1 sec, run timer */
 /* TODO: Ability to alternate lasers */
