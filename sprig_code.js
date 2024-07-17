@@ -395,17 +395,17 @@ p.w....w.....
 ..w....w.....
 ..wwxwwwwvwww
 ..h..........
-..h........g.
+..h...g......
 vvwwvwwwwswww
 ..w....w.....
 llw....w.....`,
   map`
 p.w...w...w..
 ..w...w...w..
-..www.wwwswww
+..ww..wwwswww
 ...h...h.....
 ...h...h.....
-wwwwwxwwwvwww
+wwwwxxwwwvwww
 .......w.....
 .......w...k.
 llwwwwww.....`,
@@ -440,13 +440,13 @@ w.k.w..g....w
 w...w.......w
 wwwwwwwwwwwww`,
   map`
-...w....w....
-...w..k.w....
-wwwwvwwwwwwww
+...w.....w...
+...w..k..w...
+wwwwvwwcwwwww
 ..h........zl
-..h......g.zl
+p.h......g.zl
 ..h........zl
-wvwwwsswwwwww
+wcwwwsswwwsww
 ...w....w....
 ...w....w....`
 ]
@@ -650,8 +650,10 @@ function runGuard() {
   if (iterator !== null) {
     const coords = iterator.next().value;
     const guard = getFirst("g");
-    guard.x = coords[0];
-    guard.y = coords[1];
+    if (guard != null) {
+      guard.x = coords[0];
+      guard.y = coords[1];
+    }
   }
 }
 
@@ -694,7 +696,7 @@ afterInput(() => {
 
   // If touching lasers then player caught
   if (blockHas(itemsInside, "h") || blockHas(itemsInside, "v")) {
-    setCaught()
+    setCaught();
   }
   
   /* If touch key then open all doors*/
@@ -715,6 +717,22 @@ afterInput(() => {
   /* If touch checkpoint then promote next level! */
   if (blockHas(itemsInside, "l")) {
     nextLevel();
+  }
+  
+  let guard = getFirst("g");
+  if (guard != null) {
+    for (let x = guard.x - 1; x <= guard.x + 1; x++) {
+      for (let y = guard.y - 1; y <= guard.y + 1; y++) {
+        const sprites = getTile(x, y);
+    
+        // Can't use the func I built D:
+        for (let sprite of sprites) {
+          if (sprite.type == "p" || sprite.type == "o") {
+            setCaught();
+          }
+        }
+      }
+    }
   }
 });
 
