@@ -5,7 +5,7 @@ https://sprig.hackclub.com/gallery/getting_started
 
 @title: Maze Game
 @author: Felix Gao
-@tags: ["Puzzle", "Prision"]
+@tags: ["Puzzle", "Prison"]
 @addedOn: 2024-00-00
 */
 
@@ -44,38 +44,30 @@ const music = {
 500: G4-500 + F4-500 + E4-500 + D4-500,
 14500`,
   background: tune`
-500: C5-500 + A4~500 + G5~500 + F5-500,
-500: G4/500 + F5-500,
-500: G4/500 + G5~500,
-500: D4-500 + B4/500,
-500: C5-500 + A4~500 + G5~500 + F5-500,
-500: G4/500 + F5-500,
-500: G4/500 + G5~500,
-500: D4-500 + B4/500,
-500: C5-500 + A4~500 + G5~500 + F5-500,
-500: G4/500 + F5-500,
-500: G4/500 + G5~500,
-500: D4-500 + B4/500,
-500: C5-500 + A4~500 + G5~500 + F5-500,
-500: G4/500 + F5-500,
-500: G4/500 + G5~500,
-500: D4-500 + B4/500,
-500: C5-500 + A4~500 + G5~500 + F5-500,
-500: G4/500 + F5-500,
-500: G4/500 + G5~500,
-500: D4-500 + B4/500,
-500: C5-500 + A4~500 + G5~500 + F5-500,
-500: G4/500 + F5-500,
-500: G4/500 + G5~500,
-500: D4-500 + B4/500,
-500: C5-500 + A4~500 + G5~500 + F5-500,
-500: G4/500 + F5-500,
-500: G4/500 + G5~500,
-500: D4-500 + B4/500,
-500: C5-500 + A4~500 + G5~500 + F5-500,
-500: G4/500 + F5-500,
-500: G4/500 + G5~500,
-500: D4-500 + B4/500`,
+500: C5/500,
+500: B4/500,
+500: A4/500,
+500: B4/500,
+1000,
+500: C5/500,
+500: B4/500,
+500: A4/500,
+500: B4/500,
+1000,
+500: C5/500,
+500: B4/500,
+500: A4/500,
+1500,
+500: C5/500,
+500: B4/500,
+500: A4/500,
+1500,
+500: C5/500,
+500: B4/500,
+500: A4/500,
+1500,
+500: C5/500,
+500: B4/500`,
   victory: tune`
 410.958904109589: E4-410.958904109589,
 410.958904109589: F4-410.958904109589,
@@ -310,19 +302,19 @@ LLLLLLL6LLLLLLLL
 ................`],
   [Objective, bitmap`
 ................
+.......99.......
+.......99.......
+.......99.......
+.......99.......
+.......99.......
+.......99.......
+.......99.......
+.......99.......
+.......99.......
+.......99.......
 ................
 .......99.......
 .......99.......
-.......99.......
-.......99.......
-.......99.......
-.......99.......
-.......99.......
-.......99.......
-................
-.......99.......
-.......99.......
-................
 ................
 ................`],
   [Guard, bitmap`
@@ -341,7 +333,7 @@ LLLLLLL6LLLLLLLL
 ..333333333333..
 ..333333333333..
 ................
-................`]
+................`],
   [Hammer, bitmap`
 ................
 .....111........
@@ -420,9 +412,9 @@ llwwwwww.....`,
   map`
 ..w..........
 p.wwwwwwwwwww
-..h........h.
-..h........h.
-..h........h.
+..h........hl
+..h........hl
+..h........hl
 sswwwwww.wwww
 ..w.......w..
 ..w.......w..
@@ -456,9 +448,7 @@ wwwwvwwwwwwww
 ..h........zl
 wvwwwsswwwwww
 ...w....w....
-...w....w....`,
-  map``,
-  map``,
+...w....w....`
   
 ]
 
@@ -510,8 +500,8 @@ ww...........
 // Misc settings
 var HasKey = false;
 var tutorial = true;
-var Game = null;
-var iterator = null;
+let Game = null;
+let iterator = null;
 
 // Tutorial prompt
 let x_align = 4;
@@ -575,9 +565,9 @@ onInput("l", () => { // Start game!
   if (tutorial) {
     setMap(levels[0]);
     clearText()
-    var Game = setInterval(updateGame, 1000);
+    Game = setInterval(updateGame, 1000);
     var timer = 600;
-    var iterator = cyclicIteration(guardPath[level]);
+    iterator = cyclicIteration(guardPath[level]);
     console.log(iterator);
     tutorial = false;
   }
@@ -613,8 +603,12 @@ function runGuard() {
   if (iterator !== null) {
     const coords = iterator.next();
     console.log("move guard?");
-    getFirst("g").x = coords[0];
-    getFirst("g").y = coords[1];
+    const guard = getFirst("g");
+    console.log(guard);
+    guard.x = coords[0];
+    guard.y = coords[1];
+    console.log(coords[0]);
+    console.log(coords[1]);
   } else {
     console.log("guys I think its null");
     console.log(iterator);
@@ -639,7 +633,7 @@ function nextLevel() {
   const currentLevel = levels[level];
 
   if (currentLevel !== undefined) {
-    var iterator = cyclicIteration(guardPath[level]);
+    iterator = cyclicIteration(guardPath[level]);
     console.log("level up!");
     console.log(iterator);
     setMap(currentLevel);
