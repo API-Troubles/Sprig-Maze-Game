@@ -515,15 +515,11 @@ function nextLevel() {
 /* After ALL THAT SETUP ABOVE ME comes the fun part! */
 
 afterInput(() => {
-  /* If touch active laser then player die */
-  console.log("p!");
-  console.log(getFirst("p"));
-  console.log("o!");
-  console.log(getFirst("o"));
+  // If touch active laser then player die 
   if (getFirst("p") !== undefined) {
-    const items_insides = getTile(getFirst("p").x, getFirst("p").y);
+    var items_insides = getTile(getFirst("p").x, getFirst("p").y);
   } else if (getFirst("o") !== undefined) {
-    const items_insides = getTile(getFirst("o").x, getFirst("o").y);
+    var items_insides = getTile(getFirst("o").x, getFirst("o").y);
   } else {
     throw new Error('No player sprite');
   }
@@ -598,9 +594,9 @@ function updateGame() {
   }
 
   if (getFirst("p") !== undefined) {
-    const items_insides = getTile(getFirst("p").x, getFirst("p").y);
+    var items_insides = getTile(getFirst("p").x, getFirst("p").y);
   } else if (getFirst("o") !== undefined) {
-    const items_insides = getTile(getFirst("o").x, getFirst("o").y);
+    var items_insides = getTile(getFirst("o").x, getFirst("o").y);
   } else {
     throw new Error('No player sprite');
   }
