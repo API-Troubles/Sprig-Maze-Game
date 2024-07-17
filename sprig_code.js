@@ -10,13 +10,13 @@ https://sprig.hackclub.com/gallery/getting_started
 */
 
 // People lol
-const Player = "p";
-const Player2 = "o";
-const Guard = "g";
+const player = "p";
+const player2 = "o";
+const guard = "g";
 
 // Misc
-const LevelUp = "l"
-const Wall = "w";
+const levelUp = "l"
+const wall = "w";
 
 // Lasers!
 const laserVert = "v";
@@ -26,18 +26,18 @@ const laserHorz = "h";
 const laserHorzOff = "j";
 
 // This door is never unlockable
-const Door = "d";
-const DoorHorz = "s";
+const door = "d";
+const doorHorz = "s";
   
-const DoorLocked = "z";
-const DoorLockedHorz = "x";
+const doorLocked = "z";
+const doorLockedHorz = "x";
 
-const Key = "k";
-const Objective = "m";
-const Hammer = "u";
+const key = "k";
+const objective = "m";
+const hammer = "u";
 
 setLegend(
-  [Player, bitmap`
+  [player, bitmap`
 ................
 ................
 ..666666666666..
@@ -54,7 +54,7 @@ setLegend(
 ..666666666666..
 ................
 ................`],
-  [Player2, bitmap`
+  [player2, bitmap`
 ................
 ................
 ..666666666666..
@@ -71,7 +71,7 @@ setLegend(
 ..666666666666..
 ................
 ................`],
-  [Wall, bitmap`
+  [wall, bitmap`
 0000000000000000
 0000000000000000
 0000000000000000
@@ -156,7 +156,7 @@ L..............L
 ................
 .......111......
 ......LLLLL.....`],
-  [LevelUp, bitmap`
+  [levelUp, bitmap`
 ................
 .DDD..DDDD..DDD.
 .D............D.
@@ -173,7 +173,7 @@ L..............L
 .D............D.
 .DDD..DDDD..DDD.
 ................`],
-  [Door, bitmap`
+  [door, bitmap`
 ....LLLLLLL.....
 ....L11111L.....
 ....L11111L.....
@@ -190,7 +190,7 @@ L..............L
 ....L11111L.....
 ....L11111L.....
 ....LLLLLLL.....`],
-  [DoorHorz, bitmap`
+  [doorHorz, bitmap`
 ................
 ................
 ................
@@ -207,7 +207,7 @@ LLLLLLLLLLLLLLLL
 ................
 ................
 ................`],
-  [DoorLocked, bitmap`
+  [doorLocked, bitmap`
 .....LLLLLLL....
 .....L11111L....
 .....L11111L....
@@ -224,7 +224,7 @@ LLLLLLLLLLLLLLLL
 .....L11111L....
 .....L11111L....
 .....LLLLLLL....`],
-  [DoorLockedHorz, bitmap`
+  [doorLockedHorz, bitmap`
 ................
 ................
 ................
@@ -241,7 +241,7 @@ LLLLLLL6LLLLLLLL
 ................
 ................
 ................`],
-  [Key, bitmap`
+  [key, bitmap`
 ................
 ................
 ................
@@ -258,7 +258,7 @@ LLLLLLL6LLLLLLLL
 ................
 ................
 ................`],
-  [Objective, bitmap`
+  [objective, bitmap`
 ................
 .......99.......
 .......99.......
@@ -275,7 +275,7 @@ LLLLLLL6LLLLLLLL
 .......99.......
 ................
 ................`],
-  [Guard, bitmap`
+  [guard, bitmap`
 ................
 ................
 ..333333333333..
@@ -292,7 +292,7 @@ LLLLLLL6LLLLLLLL
 ..333333333333..
 ................
 ................`]
-  [Hammer, bitmap`
+  [hammer, bitmap`
 ................
 .....111........
 .....1111.......
@@ -512,9 +512,10 @@ const music = {
 10684.931506849314`
 }
 
-var HasKey = false;
+var hasKey = false;
 var tutorial = true;
-let Game = null;
+let game = null;
+let guardAI = null;
 let iterator = null;
 let timer = 600;
 
@@ -546,48 +547,53 @@ function tutorialHostile() {
 
 // inputs for player movement control
 onInput("w", () => {
-  try {
-    getFirst(Player).y -= 1;
-  } catch (error) {
-    getFirst(Player2).y -= 1;
-  }
+  if (!tutorial) {
+    try {
+      getFirst(player).y -= 1;
+    } catch (error) {
+      getFirst(player2).y -= 1;
+    }
 });
 
 onInput("a", () => {
-  try {
-    getFirst(Player).x -= 1;
-    getFirst("p").type = "o";
-  } catch (error) {
-    getFirst(Player2).x -= 1;
-  }
+  if (!tutorial) {
+    try {
+      getFirst(player).x -= 1;
+      getFirst("p").type = "o";
+    } catch (error) {
+      getFirst(player2).x -= 1;
+    }
 });
 
 onInput("s", () => {
-  try {
-    getFirst(Player).y += 1;
-  } catch (error) {
-    getFirst(Player2).y += 1;
-  }
+  if (!tutorial) {
+    try {
+      getFirst(player).y += 1;
+    } catch (error) {
+      getFirst(player2).y += 1;
+    }
 });
 
 onInput("d", () => {
-  try {
-    getFirst(Player2).x += 1;
-    getFirst("o").type = "p";
-  } catch (error) {
-    getFirst(Player).x += 1;
-  }
+  if (!tutorial) {
+    try {
+      getFirst(player2).x += 1;
+      getFirst("o").type = "p";
+    } catch (error) {
+      getFirst(player).x += 1;
+    }
 });
 
 onInput("j", () => {
   nextLevel();
 });
 
-onInput("l", () => { // Start game!
+onInput("l", () => { // Start da game alr!
   if (tutorial) {
     setMap(levels[0]);
     clearText()
-    Game = setInterval(updateGame, 1000);
+    game = setInterval(updateGame, 1000);
+    guardAI = setInterval(runGuard, 2000);
     var timer = 600;
     iterator = cyclicIteration(guardPath[level]);
     console.log(iterator);
@@ -595,11 +601,32 @@ onInput("l", () => { // Start game!
   }
 });
 
+function blockHas(block, item) {
+  for (let sprite of block) {
+    if (sprite.type == item) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function getPlayer() {
+  let playerModel = null;
+  if (getFirst("p") !== undefined) {
+      playerModel = getFirst("p");
+  } else if (getFirst("o") !== undefined) {
+      playerModel = getFirst("o");
+  } else {
+    throw new Error('No player sprite');
+  }
+  console.log(`Player Coords: (${playerModel.x}, ${playerModel.y})`)
+  return {x: playerModel.x, y: playerModel.y};
+}
 
 // Iterate infinitely front and back
 // CREDIT: ChatGPT
 function cyclicIteration(array) {
-  if (array === null) {
+  if (array == null) {
     return null
   }
   let index = 0;
@@ -621,26 +648,6 @@ function cyclicIteration(array) {
   };
 }
 
-function blockHas(block, sprite) {
-  for (let sprites of block) {
-    if (sprites.type == sprite) {
-      return true;
-    }
-  return false;
-
-function getPlayer() {
-  let player = null;
-  if (getFirst("p") != undefined) {
-    var player = getFirst("p");
-  } else if (getFirst("o") != undefined) {
-    var player = getFirst("o");
-  } else {
-    throw new Error('No player sprite');
-  }
-  return {x: player.x, y: player.y}
-}
-
-
 // Aw man I got caught by a guard!
 function setCaught() {
   playback.end();
@@ -649,7 +656,8 @@ function setCaught() {
   addText("Press 'L' to", options = { x: 4, y: 5, color: color`0` });
   addText("lockpick out", options = { x: 4, y: 6, color: color`0` })
   setMap(misc.lost);
-  clearInterval(Game);
+  clearInterval(game);
+  clearInterval(guardAI);
   tutorial = true;
 }
 
