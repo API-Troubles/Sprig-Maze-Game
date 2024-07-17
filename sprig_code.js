@@ -378,7 +378,37 @@ p......jg.wvv
 wwwwwwxw..w..
 .......w..w..
 .......w..h..
-llwwwwww..h..`
+llwwwwww..h..`,
+  map`
+p.w....w.....
+..w....w....k
+..w....w.....
+..wwxwwwwvwww
+..h..........
+..h........g.
+vvwwvwwwwswww
+..w....w.....
+llw....w.....`,
+  map`
+p.w...w...w..
+..w...w...w..
+..www.wwwswww
+...h...h.....
+...h...h.....
+wwwwwxwwwvwww
+.......w.....
+.......w...k.
+llwwwwww.....`,
+  map`
+..w..........
+p.wwwwwwwwwww
+..h........h.
+..h........h.
+..h........h.
+sswwwwww.wwww
+..w.......w..
+..w.......w..
+..w.......w..`
 ]
 
 
@@ -430,6 +460,7 @@ ww...........
 var HasKey = false;
 var tutorial = true;
 var Game = null;
+var iterator = null;
 
 // Tutorial prompt
 let x_align = 4;
@@ -495,15 +526,16 @@ onInput("l", () => { // Start game!
     clearText()
     var Game = setInterval(updateGame, 1000);
     var iterator = cyclicIteration(guardPath[level]);
+    console.log(iterator);
     tutorial = false;
   }
 });
 
 
-// Iterate infinately front and back
+// Iterate infinitely front and back
 // CREDIT: ChatGPT
 function cyclicIteration(array) {
-  if (array == null) {
+  if (array === null) {
     return null
   }
   let index = 0;
@@ -520,19 +552,20 @@ function cyclicIteration(array) {
       const currentValue = array[index];
       index += direction;
 
-      return {value: currentValue,};
+      return {value: currentValue};
     }
   };
 }
 
 function runGuard() {
-  if (iterator == undefined) {
-    return undefined
-  }
   if (iterator !== null) {
     const coords = iterator.next();
+    console.log("move guard?");
     getFirst("g").x = coords[0];
     getFirst("g").y = coords[1];
+  } else {
+    console.log("guys I think its null");
+    console.log(iterator);
   }
 }
 
@@ -552,6 +585,8 @@ function nextLevel() {
 
   if (currentLevel !== undefined) {
     var iterator = cyclicIteration(guardPath[level]);
+    console.log("level up!");
+    console.log(iterator);
     setMap(currentLevel);
   } else {
     addText("You WIN!", { y: 4, color: color`D` });
@@ -659,6 +694,6 @@ function updateGame() {
       setCaught();
     }
   }
-  runGuard()
+  runGuard();
   timer--;
 }          
