@@ -34,6 +34,7 @@ const DoorLockedHorz = "x";
 
 const Key = "k";
 const Objective = "m";
+const Hammer = "u";
 
 // Music!
 const music = {
@@ -209,16 +210,16 @@ L..............L
 ................
 .DDD..DDDD..DDD.
 .D............D.
-.D.....DD.....D.
-.......DD.......
-.......DD.......
-.D.....DD.....D.
-.D.....DD.....D.
-.D.....DD.....D.
-.D..DD.DD.DD..D.
-.....DDDDDD.....
-......DDDD......
-.D.....DD.....D.
+.D............D.
+................
+................
+.D............D.
+.D............D.
+.D............D.
+.D............D.
+................
+................
+.D............D.
 .D............D.
 .DDD..DDDD..DDD.
 ................`],
@@ -341,6 +342,23 @@ LLLLLLL6LLLLLLLL
 ..333333333333..
 ................
 ................`]
+  [Hammer, bitmap`
+................
+.....111........
+.....1111.......
+......1111......
+.......1111.....
+........1111....
+........C1111...
+.......CCC1111..
+......CCC..111..
+.....CCC....11..
+....CCC......1..
+...CCC..........
+..CCC...........
+.CCC............
+CCC.............
+.C..............`]
 )
 
 // Setup levels and different misc. screens here
@@ -408,7 +426,40 @@ p.wwwwwwwwwww
 sswwwwww.wwww
 ..w.......w..
 ..w.......w..
-..w.......w..`
+..w.......w..`,
+  map`
+....h...h...l
+....h.g.h...l
+....h...h...l
+wwwwwvvvwwwww
+....w...w....
+....w...w....
+....w...w....
+....w...w....
+....wlllw....`,
+  map`
+....w...w....
+....w...wwwww
+....wvvvw.m.w
+wwwww...w...w
+w...h...wwxww
+w...w.......w
+w.k.w..g....w
+w...w.......w
+wwwwwwwwwwwww`,
+  map`
+...w....w....
+...w..k.w....
+wwwwvwwwwwwww
+..h........zl
+..h......g.zl
+..h........zl
+wvwwwsswwwwww
+...w....w....
+...w....w....`,
+  map``,
+  map``,
+  
 ]
 
 
@@ -525,6 +576,7 @@ onInput("l", () => { // Start game!
     setMap(levels[0]);
     clearText()
     var Game = setInterval(updateGame, 1000);
+    var timer = 600;
     var iterator = cyclicIteration(guardPath[level]);
     console.log(iterator);
     tutorial = false;
@@ -572,9 +624,12 @@ function runGuard() {
 function setCaught() {
   playback.end();
   playTune(music.caught);
-  addText("You got caught!", options = { x: 3, y: 6, color: color`3` });
+  addText("You got caught!", options = { x: 3, y: 3, color: color`3` });
+  addText("Press 'L' to", options = { x: 4, y: 5, color: color`0` });
+  addText("lockpick out", options = { x: 4, y: 6, color: color`0` })
   setMap(misc.lost);
   clearInterval(Game);
+  tutorial = true;
 }
 
 /* Credit for this function: Tutorial :D */
