@@ -601,17 +601,10 @@ function cyclicIteration(array) {
 
 function runGuard() {
   if (iterator !== null) {
-    const coords = iterator.next();
-    console.log("move guard?");
+    const coords = iterator.next().value;
     const guard = getFirst("g");
-    console.log(guard);
     guard.x = coords[0];
     guard.y = coords[1];
-    console.log(coords[0]);
-    console.log(coords[1]);
-  } else {
-    console.log("guys I think its null");
-    console.log(iterator);
   }
 }
 
@@ -634,8 +627,6 @@ function nextLevel() {
 
   if (currentLevel !== undefined) {
     iterator = cyclicIteration(guardPath[level]);
-    console.log("level up!");
-    console.log(iterator);
     setMap(currentLevel);
   } else {
     addText("You WIN!", { y: 4, color: color`D` });
@@ -644,7 +635,6 @@ function nextLevel() {
     setMap(misc.victory);
   }
 }
-
 
 /* After ALL THAT SETUP ABOVE ME comes the fun part! */
 
