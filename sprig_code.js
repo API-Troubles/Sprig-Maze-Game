@@ -372,7 +372,7 @@ p.w....w.....
 ..w....w.....
 ..wwxwwwwvwww
 ..h..........
-..h........g.
+g.h..........
 vvwwvwwwwswww
 ..w....w.....
 llw....w.....`,
@@ -406,26 +406,16 @@ wwwwwvvvwwwww
 ....w...w....
 ....wsssw....
 ....w...w....`,
-/*  map`
-....w...w....
-....w...wwwww
-....wvvvw.m.w
-wwwww...w...w
-w...h...wwxww
-w...w.......w
-w.k.w..g....w
-w...w.......w
-wwwwwwwwwwwww`, */
   map`
-...w....w....
-...w..k.w....
-wwwwvwwwwwwww
-..h........zl
-..h......g.zl
-..h........zl
-wvwwwsswwwwww
-...w....w....
-...w....w....`,
+...h...hz...l
+...h.g.hz...l
+...h...hz...l
+wvwwvvvwwwwww
+...w...w.kw..
+...w...w..w..
+...h...h..d..
+...w...w..w..
+...w...w..w..`,
   map`
 ...h...hz...l
 ...h.g.hz...l
@@ -450,19 +440,35 @@ const guardPath = [
     [7,4],
     [6,4],
     [5,4],
-    [4,4],
-    
+    [4,4]
+  ], [
+    [0,5],
+    [1,5],
+    [2,5],
+    [3,5],
+    [4,5],
+    [5,5],
+    [6,5],
+    [7,5],
+    [8,5],
+    [9,5]
   ]
 ]
 
 const screenText = [
   [
     ["Quick! >>>", { x: 4, y: 3, color: color`0`}]
-  ], [
+  ], 
+  [
     ["Watch out!", { x: 2, y: 3, color: color`0`}],
     ["lasers! >", { x: 2, y: 5, color: color`0`}]
-  ], [
+  ], 
+  [
     ["Guard!", { x: 1, y: 3, color: color`0`}]
+  ], 
+  null,
+  [
+    
   ]
 ]
 
@@ -817,13 +823,14 @@ function runGuard() {
     if (coords.direction == "left") {
       try {
         guardSprite.type = "f";
+        getFirst("g").remove()
       } catch (error) {
         console.log(error);
       }
-      guardSprite.type = "f";
     } else if (coords.direction == "right") {
       try {
         guardSprite.type = "g";
+        getFirst("f").remove()
       } catch (error) {
         console.log(error);
       }
