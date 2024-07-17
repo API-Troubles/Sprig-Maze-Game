@@ -372,13 +372,24 @@ w...w...w....`,
   map`
 ....w.....w.k
 ....w.....w..
-wwwswwwwssw..
+www.wwwwssw..
 .......j..w..
-p......j..wvv
+p......jg.wvv
 wwwwwwxw..w..
 .......w..w..
 .......w..h..
 llwwwwww..h..`
+]
+
+
+const guardPath = [
+  null,
+  null,
+  [
+    [0,0],
+    [0,1],
+    [0,2]
+  ]
 ]
 
 const misc = {
@@ -394,15 +405,15 @@ w...w...w...w
 w..pw...w...w
 wwwwwwwwwwwww`,
   victory: map`
-.............
-.............
-.............
-.............
-.............
-.............
-.............
-.............
-.............`,
+.w...........
+.w...........
+ww...........
+.d...........
+.d...........
+ww...........
+.w....p......
+.w...........
+.w...........`,
   tutorial: map`
 .............
 .p...........
@@ -417,11 +428,12 @@ wwwwwwwwwwwww`,
 
 // Misc settings
 var HasKey = false;
-
 var tutorial = true;
-setMap(misc.tutorial)
-let x_align = 4;
+var Game = null;
 
+// Tutorial prompt
+let x_align = 4;
+setMap(misc.tutorial)
 addText("< You!", options = { x: x_align, y: 3, color: color`0` });
 addText("< Avoid lasers", options = { x: x_align, y: 6, color: color`0` });
 addText("< Locked doors", options = { x: x_align, y: 9, color: color`0` });
@@ -477,7 +489,6 @@ onInput("j", () => {
   nextLevel();
 });
 
-var Game = null;
 onInput("l", () => { // Start game!
   if (tutorial) {
     setMap(levels[0]);
@@ -486,6 +497,18 @@ onInput("l", () => { // Start game!
     tutorial = false;
   }
 });
+
+function runGuard(stage) {
+  var path = guardPath[level]
+  if (path !== null) {
+    console.log(path);
+    coords = path[stage];
+    console.log("coords?")
+    console.log(coords)
+    getFirst("g").x = coords[0];
+    getFirst("g").y = coords[1];
+  }
+}
 
 function setCaught() {
   playback.end();
@@ -557,6 +580,7 @@ afterInput(() => {
 /* TODO: Ability to alternate lasers */
 /* CREDIT TIMER: Thanks to https://sprig.hackclub.com/~/pIrXiIjFINorvL2bCYM9! */
 var laserOn = false;
+var guardPos = 0;
 function updateGame() {
   timerText = addText(`Escape in ${timer} secs`, { x: 1, y: 0, color: color`2`});
   if (laserOn) {
@@ -609,4 +633,11 @@ function updateGame() {
     }
   timer--;
   }
+  runGuard(guardPos);
+  if (guardPos < 3) {
+    guardPos++;
+  } else {
+    guardPos = 0;
+  }
+  
 }
