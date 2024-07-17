@@ -336,7 +336,7 @@ w...........w
 w..........lw
 w...........w
 w...........w
-www.wwwawwwaw
+www.wwwswwwsw
 w...w...w...w
 w...w...w...w
 w..pw...w...w
@@ -347,16 +347,16 @@ wwwwwwwwwwwww`,
 ........wwwww
 ........h...l
 p.......h...l
-wwwawwwawwwww
+wwwswwwswwwww
 w...w...w....
 w...w...w....
 w...w...w....`,
   map`
 ....w.....w.k
 ....w.....w..
-wwwawwwwaaw..
-.......h..w..
-p......h..wvv
+wwwswwwwssw..
+.......j..w..
+p......j..wvv
 wwwwwwxw..w..
 .......w..w..
 .......w..h..
@@ -370,7 +370,7 @@ w...........w
 w...........w
 w...........w
 w...........w
-wwwawwwawwwaw
+wwwswwwswwwsw
 w...w...w...w
 w...w...w...w
 w..pw...w...w
@@ -403,12 +403,12 @@ var HasKey = false;
 var tutorial = true;
 setMap(misc.tutorial)
 let x_align = 4;
+
 addText("< You!", options = { x: x_align, y: 3, color: color`0` });
 addText("< Avoid lasers", options = { x: x_align, y: 6, color: color`0` });
 addText("< Locked doors", options = { x: x_align, y: 9, color: color`0` });
 addText("< Key = open", options = { x: x_align, y: 12, color: color`0` });
 addText("Press 'L' to start!", options = { x: 1, y: 14, color: color`0` });
-
 
 setSolids([Player, Wall, Door, DoorHorz, DoorLocked, DoorLockedHorz]);
 setPushables({
@@ -441,9 +441,12 @@ onInput("j", () => {
   nextLevel();
 });
 
+var Game = null;
 onInput("l", () => { // Start game!
   if (tutorial) {
     setMap(levels[0]);
+    clearText()
+    var Game = setInterval(updateGame, 1000);
     tutorial = false;
   }
 });
@@ -452,13 +455,12 @@ function setCaught() {
   playback.end();
   playTune(music.caught);
   addText("You got caught!", options = { x: 3, y: 6, color: color`3` });
-  setMap(misc.caught);
-  clearInterval(game);
+  setMap(misc.lost);
+  clearInterval(Game);
 }
 
 /* Credit for this function: Tutroial :D */
 function nextLevel() {
-  let game = setInterval(updateGame, 1000);
   level = level + 1;
 
   const currentLevel = levels[level];
@@ -512,44 +514,50 @@ afterInput(() => {
 /* Enable and disable all lasers every 1 sec, run timer */
 /* TODO: Ability to alternate lasers */
 /* CREDIT TIMER: Thanks to https://sprig.hackclub.com/~/pIrXiIjFINorvL2bCYM9! */
+var laserOn = false;
 function updateGame() {
   timerText = addText(`Escape in ${timer} secs`, { x: 1, y: 0, color: color`2`});
-  
-  try { // Convert all horizontal off lasers to on
-    getAll("j").forEach(sprite => {
-      sprite.type = "h";
-    });
-  } catch (error) {
-    console.log(error);
+  if (laserOn) {
+    try { // Convert all horizontal off lasers to on
+      getAll("j").forEach(sprite => {
+        sprite.type = "h";
+      });
+    } catch (error) {
+      console.log(error);
+    }
+    try { // Convert all vertical off lasers to on
+      getAll("c").forEach(sprite => {
+        sprite.type = "v";
+      });
+    } catch (error) {
+      console.log(error);
+    }
+    laserOn = false;
+  } else {
+    try { // Convert all horizontal on lasers to off
+      getAll("h").forEach(sprite => {
+        sprite.type = "j";
+      });
+    } catch (error) {
+      console.log(error);
+    }
+    try { // Convert all vertical on lasers to off
+      getAll("v").forEach(sprite => {
+        sprite.type = "c";
+      });
+    } catch (error) {
+      console.log(error);
+    }
+    laserOn = true;
   }
-  try { // Convert all vertical off lasers to on
-    getAll("c").forEach(sprite => {
-      sprite.type = "v";
-    });
-  } catch (error) {
-    console.log(error);
-  }
-  try { // Convert all horizontal on lasers to offj
-    getAll("h").forEach(sprite => {
-      sprite.type = "j";
-    });
-  } catch (error) {
-    console.log(error);
-  }
-  try { // Convert all vertical on lasers to off
-    getAll("v").forEach(sprite => {
-      sprite.type = "c";
-    });
-  } catch (error) {
-    console.log(error);
-  }
+
   const items_insides = getTile(getFirst("p").x, getFirst("p").y);
   for (let sprite of items_insides) {
     if (sprite["_type"] == "h" || sprite["_type"] == "v") {
       setCaught()
     }
   if (timer <= 0) {
-        setCaught();
+    setCaught();
     }
   timer--;
   }
