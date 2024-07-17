@@ -389,12 +389,12 @@ llwwwwww.....`,
   map`
 ..w..........
 p.wwwwwwwwwww
-..h........h.
-..h........h.
-..h........h.
+..h.......z.l
+..h.......z.l
+..h.......z.l
 sswwwwww.wwww
 ..w.......w..
-..w.......w..
+..w.f...k.w..
 ..w.......w..`,
   map`
 ....h...h...l
@@ -441,7 +441,8 @@ const guardPath = [
     [6,4],
     [5,4],
     [4,4]
-  ], [
+  ], 
+  [
     [0,5],
     [1,5],
     [2,5],
@@ -452,6 +453,13 @@ const guardPath = [
     [7,5],
     [8,5],
     [9,5]
+  ],
+  null,
+  [
+    [4, 7],
+    [5, 7],
+    [6, 7],
+    [7, 7]
   ]
 ]
 
@@ -467,8 +475,10 @@ const screenText = [
     ["Guard!", { x: 1, y: 3, color: color`0`}]
   ], 
   null,
+  null,
+  null,
   [
-    
+    ["Is that the main hall?", { x: 3, y: 4, color: color`0`}]
   ]
 ]
 
