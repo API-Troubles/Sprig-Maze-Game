@@ -3,7 +3,7 @@ First time? Check out the tutorial game:
 https://sprig.hackclub.com/gallery/getting_started
 
 
-@title: Maze Game
+@title: Escape Arcade Prision!
 @author: Felix Gao
 @tags: ["Puzzle", "Prison"]
 @addedOn: 2024-00-00
@@ -542,10 +542,12 @@ setPushables({
 // Tutorial prompt
 let x_align = 4;
 
+setMap(misc.tutorialFriendly);
 e = setInterval(tutorialAnimation, 4000);
 
 let tutorialFlag = false;
 function tutorialAnimation() {
+  clearText();
   if (tutorialFlag) {
     console.log(misc.tutorialFriendly);
     setMap(misc.tutorialFriendly);
@@ -807,4 +809,4 @@ function updateGame() {
     setCaught();
   }
   timer--;
-}
+}          
