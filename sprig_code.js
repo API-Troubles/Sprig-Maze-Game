@@ -709,25 +709,24 @@ function getPlayer() {
 
 function getGuard() {
   let GuardModel = null;
-  if (getFirst("p") !== undefined) {
+  if (getFirst("g") !== undefined) {
       GuardModel = getFirst("g");
-  } else if (getFirst("o") !== undefined) {
-      GuardModel = getFirst("o");
-  } else {
-    return null;
+  } else if (getFirst("f") !== undefined) {
+      GuardModel = getFirst("f");
   }
-  return {x: GuardModel.x, y: GuardModel.y};
+  return GuardModel;
 }
 
 
 // Iterate infinitely front and back
-// CREDIT: ChatGPT
+// CREDIT: ChatGPT, modified code
 function cyclicIteration(array) {
   if (array == null) {
     return null
   }
   let index = 0;
   let direction = 1;
+  let directionStr = "";
 
   // Store the last move to calculate guard NPC animation
   let lastMove = null;
@@ -745,26 +744,24 @@ function cyclicIteration(array) {
       
       if (lastMove == null) {
         lastMove = currentValue;
-        console.log(`nothing found so lets make it! ${lastMove}`)
-        return {value: currentValue, direction: "nothing yet"};
+        return {value: currentValue, directionStr: "nothing yet"};
       }
       
       let difference = lastMove[0] - currentValue[0];
-      console.log(`oo a difference! ${difference}`)
       if (difference >= 1) { // If the x is increasing / moving left <<<
-        const direction = "left";
-        console.log("confirm left!");
+        directionStr = "left";
+        
       } else if (difference <= -1) { // If the x is decreasing / moving right >>>
-        const direction = "right";
-        console.log("confirm right!");
+        directionStr = "right";
+
       } else { // else then not moving left or right
-        const direction = "up/down"
+        directionStr = "up/down"
       }
 
       lastMove = currentValue;
-      console.log("lets final check!")
-      console.log({value: currentValue, direction: direction});
-      return {value: currentValue, direction: direction};
+      //console.log("lets final check!")
+      //console.log({value: currentValue, direction: directionStr});
+      return {value: currentValue, direction: directionStr};
     }
   };
 }
@@ -793,9 +790,7 @@ function nextLevel() {
   if (currentLevel !== undefined) {
     iterator = cyclicIteration(guardPath[level]);
     setMap(currentLevel);
-    console.log(screenText);
     if (screenText[level] != null) {
-      console.log(`okie mister ${screenText[level]}`)
       screenText[level].forEach((text) => addText(text[0], options=text[1]));
     }
   } else { // No more maps to load so victory!
@@ -813,21 +808,22 @@ function nextLevel() {
 function runGuard() {
   if (iterator !== null) {
     const coords = iterator.next();
-    getFirst("g").x = coords.value[0];
-    getFirst("g").y = coords.value[1];
+    const guardSprite = getGuard();
 
-    if (coords == "left") {
-      console.log("left!");
+    console.log(guardSprite);
+    guardSprite.x = coords.value[0];
+    guardSprite.y = coords.value[1];
+
+    if (coords.direction == "left") {
       try {
-        getFirst("g").type = "f";
+        guardSprite.type = "f";
       } catch (error) {
         console.log(error);
       }
-      getFirst("g").type = "f";
-    } else if (coords == "right") {
-      console.log("right!");
+      guardSprite.type = "f";
+    } else if (coords.direction == "right") {
       try {
-        getFirst("f").type = "g";
+        guardSprite.type = "g";
       } catch (error) {
         console.log(error);
       }
