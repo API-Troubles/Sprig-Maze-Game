@@ -291,7 +291,7 @@ LLLLLLL6LLLLLLLL
 ..333333333333..
 ..333333333333..
 ................
-................`]
+................`],
   [hammer, bitmap`
 ................
 .....111........
@@ -450,7 +450,7 @@ ww...........
 .w....p......
 .w...........
 .w...........`,
-  tutorial: map`
+  tutorialFriendly: map`
 .............
 .p...........
 .............
@@ -460,7 +460,7 @@ ww...........
 .............
 .k...........
 .............`,
-  tutorial: map``
+  tutorialHostile: map``
 }
 
 const music = {
@@ -521,10 +521,10 @@ let timer = 600;
 
 const playback = playTune(music.background, Infinity);
 
-setSolids([Player, Player2, Wall, Door, DoorHorz, DoorLocked, DoorLockedHorz]);
+setSolids([player, player2, wall, door, doorHorz, doorLocked, doorLockedHorz]);
 
 setPushables({
-  [Player]: []
+  [player]: []
 });
 
 // Tutorial prompt
@@ -553,6 +553,7 @@ onInput("w", () => {
     } catch (error) {
       getFirst(player2).y -= 1;
     }
+  }
 });
 
 onInput("a", () => {
@@ -563,6 +564,7 @@ onInput("a", () => {
     } catch (error) {
       getFirst(player2).x -= 1;
     }
+  }
 });
 
 onInput("s", () => {
@@ -572,6 +574,7 @@ onInput("s", () => {
     } catch (error) {
       getFirst(player2).y += 1;
     }
+  }
 });
 
 onInput("d", () => {
@@ -582,6 +585,7 @@ onInput("d", () => {
     } catch (error) {
       getFirst(player).x += 1;
     }
+  }
 });
 
 onInput("j", () => {
@@ -702,7 +706,7 @@ afterInput(() => {
   }
   
   // If touch key then open all door
-  if (blockHas(block, "k") {
+  if (blockHas(block, "k")) {
     try {
       getAll("x").forEach((door) => door.remove());
     } catch (error) {
@@ -715,10 +719,9 @@ afterInput(() => {
     }
     getFirst("k").remove();
   }
-}
 
   // If touch checkpoint promote next level!
-  if (blockHas(block, "l") {
+  if (blockHas(block, "l")) {
       nextLevel();
   }
 
@@ -747,12 +750,12 @@ function updateGame() {
   timerText = addText(`Escape in ${timer} secs`, { x: 1, y: 0, color: color`2`});
   if (laserOn) {
     try { // Convert all horizontal off lasers to on
-      getAll("j").forEach(sprite => {sprite.type = "h");
+      getAll("j").forEach(sprite => sprite.type = "h");
     } catch (error) {
       console.log(error);
     }
     try { // Convert all vertical off lasers to on
-      getAll("c").forEach(sprite => {sprite.type = "v");
+      getAll("c").forEach(sprite => sprite.type = "v");
     } catch (error) {
       console.log(error);
     }
