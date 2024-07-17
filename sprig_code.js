@@ -516,21 +516,25 @@ function nextLevel() {
 
 afterInput(() => {
   /* If touch active laser then player die */
-  console.log(getFirst("p").x);
-  console.log(getFirst("o").x)
-  try {
+  console.log("p!");
+  console.log(getFirst("p"));
+  console.log("o!");
+  console.log(getFirst("o"));
+  if (getFirst("p") !== undefined) {
     const items_insides = getTile(getFirst("p").x, getFirst("p").y);
-  } catch (error) {
+  } else if (getFirst("o") !== undefined) {
     const items_insides = getTile(getFirst("o").x, getFirst("o").y);
+  } else {
+    throw new Error('No player sprite');
   }
   for (let sprite of items_insides) {
-    if (sprite["_type"] == "h" || sprite["_type"] == "v") {
+    if (sprite.type == "h" || sprite.type == "v") {
       setCaught()
     }
   }
   /* If touch key then add key to inv */
   for (let sprite of items_insides) {
-    if (sprite["_type"] == "k") {
+    if (sprite.type == "k") {
       try {
         getFirst("z").remove();
       } catch (error) {
@@ -547,7 +551,7 @@ afterInput(() => {
 
   /* If touch checkpoint promote next level! */
   for (let sprite of items_insides) {
-    if (sprite["_type"] == "l") {
+    if (sprite.type == "l") {
       nextLevel();
     }
   }
@@ -593,13 +597,15 @@ function updateGame() {
     laserOn = true;
   }
 
-  try {
+  if (getFirst("p") !== undefined) {
     const items_insides = getTile(getFirst("p").x, getFirst("p").y);
-  } catch (error) {
+  } else if (getFirst("o") !== undefined) {
     const items_insides = getTile(getFirst("o").x, getFirst("o").y);
+  } else {
+    throw new Error('No player sprite');
   }
   for (let sprite of items_insides) {
-    if (sprite["_type"] == "h" || sprite["_type"] == "v") {
+    if (sprite.type == "h" || sprite.type == "v") {
       setCaught()
     }
   if (timer <= 0) {
