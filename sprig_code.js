@@ -494,17 +494,43 @@ onInput("l", () => { // Start game!
     setMap(levels[0]);
     clearText()
     var Game = setInterval(updateGame, 1000);
+    var iterator = cyclicIteration(guardPath[level]);
     tutorial = false;
   }
 });
 
-function runGuard(stage) {
-  var path = guardPath[level]
-  if (path !== null) {
-    console.log(path);
-    coords = path[stage];
-    console.log("coords?")
-    console.log(coords)
+
+// Iterate infinately front and back
+// CREDIT: ChatGPT
+function cyclicIteration(array) {
+  if (array == null) {
+    return null
+  }
+  let index = 0;
+  let direction = 1;
+
+  return {
+    next: function() {
+      if (index === array.length - 1) {
+        direction = -1;
+      } else if (index === 0) {
+        direction = 1;
+      }
+
+      const currentValue = array[index];
+      index += direction;
+
+      return {value: currentValue,};
+    }
+  };
+}
+
+function runGuard() {
+  if (iterator == undefined) {
+    return undefined
+  }
+  if (iterator !== null) {
+    const coords = iterator.next();
     getFirst("g").x = coords[0];
     getFirst("g").y = coords[1];
   }
@@ -525,6 +551,7 @@ function nextLevel() {
   const currentLevel = levels[level];
 
   if (currentLevel !== undefined) {
+    var iterator = cyclicIteration(guardPath[level]);
     setMap(currentLevel);
   } else {
     addText("You WIN!", { y: 4, color: color`D` });
@@ -628,16 +655,10 @@ function updateGame() {
     if (sprite.type == "h" || sprite.type == "v") {
       setCaught()
     }
-  if (timer <= 0) {
-    setCaught();
+    if (timer <= 0) {
+      setCaught();
     }
+  }
+  runGuard()
   timer--;
-  }
-  runGuard(guardPos);
-  if (guardPos < 3) {
-    guardPos++;
-  } else {
-    guardPos = 0;
-  }
-  
-}
+}          
