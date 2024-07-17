@@ -542,31 +542,43 @@ setPushables({
 // Tutorial prompt
 let x_align = 4;
 
+// Tutorial text is stored in a var for convenience
+let tutorialText = [
+  [
+    ["< You!", { x: x_align, y: 3, color: color`0`}],
+    ["< Next Lv", { x: x_align, y: 6, color: color`0`}],
+    ["< Locked door", { x: x_align, y: 9, color: color`0`}],
+    ["< Key = open", { x: x_align, y: 12, color: color`0`}],
+  ],
+  [
+    ["< Avoid Guards", { x: x_align, y: 3, color: color`0` }],
+    ["< Avoid lasers", { x: x_align, y: 6, color: color`0` }]
+  ]
+]
+
 setMap(misc.tutorialFriendly);
+tutorialText[0].forEach((text) => addText(text[0], options=text[1]));
+addText("Press 'L' to play!", options = { x: 1, y: 14, color: color`0` });
 e = setInterval(tutorialAnimation, 4000);
 
 let tutorialFlag = false;
 function tutorialAnimation() {
   clearText();
   if (tutorialFlag) {
-    console.log(misc.tutorialFriendly);
     setMap(misc.tutorialFriendly);
-    addText("< You!", options = { x: x_align, y: 3, color: color`0` });
-    addText("< Next Lv", options = { x: x_align, y: 6, color: color`0` });
-    addText("< Locked door", options = { x: x_align, y: 9, color: color`0` });
-    addText("< Key = open", options = { x: x_align, y: 12, color: color`0` });
+    tutorialText[0].forEach((text) => addText(text[0], options=text[1]));
     addText("Press 'L' to play!", options = { x: 1, y: 14, color: color`0` });
     tutorialFlag = false;
   } else {
-    console.log(misc.tutorialHostile);
     setMap(misc.tutorialHostile);
-    addText("< Avoid Guards", options = { x: x_align, y: 3, color: color`0` });
-    addText("< Avoid lasers", options = { x: x_align, y: 6, color: color`0` });
+    tutorialText[1].forEach((text) => addText(text[0], options=text[1]));
     addText("Press 'L' to play!", options = { x: 1, y: 14, color: color`0` });
     tutorialFlag = true;
     
   }
 }
+// End tutorial!
+
 
 // inputs for player movement control
 onInput("w", () => {
