@@ -338,9 +338,9 @@ w...w...w....
 w...w...w....
 w...w...w....`,
   map`
-....w.....w.k
-....w.....w..
-www.wwwwssw..
+.......w..w.k
+.......w..w..
+wwwwww.wssw..
 .......j..w..
 p......jg.wvv
 wwwwwwxw..w..
@@ -416,9 +416,12 @@ const guardPath = [
   null,
   null,
   [
-    [0,0],
-    [0,1],
-    [0,2]
+    [8,4],
+    [7,4],
+    [6,4],
+    [5,4],
+    [4,4],
+    
   ]
 ]
 
@@ -545,6 +548,8 @@ function tutorialHostile() {
   addText("Press 'L' to play!", options = { x: 1, y: 14, color: color`0` });
 }
 
+tutorialFriendly();
+
 // inputs for player movement control
 onInput("w", () => {
   if (!tutorial) {
@@ -663,6 +668,7 @@ function setCaught() {
   clearInterval(game);
   clearInterval(guardAI);
   tutorial = true;
+  level = 0;
 }
 
 /* Credit for this function: Tutorial :D */
@@ -688,18 +694,16 @@ function nextLevel() {
 // Guard logic
 function runGuard() {
   if (iterator !== null) {
-    const coords = iterator.next();
+    const coords = iterator.next().value;
     getFirst("g").x = coords[0];
     getFirst("g").y = coords[1];
-  } else {
-    console.log(iterator);
   }
 }
 
 // Most player physics is here
 afterInput(() => {
-  player = getPlayer();
-  block = getTile(player.x, player.y);
+  playerSprite = getPlayer();
+  block = getTile(playerSprite.x, playerSprite.y);
   // If touch active laser then player die 
   if (blockHas(block, "h") || blockHas(block, "v")) {
     setCaught()
@@ -774,8 +778,8 @@ function updateGame() {
     laserOn = true;
   }
 
-  player = getPlayer();
-  block = getTile(player.x, player.y);
+  playerSprite = getPlayer();
+  block = getTile(playerSprite.x, playerSprite.y);
 
   //  Check if lasers touching player every sec
   if (blockHas(block, "h") || blockHas(block, "v")) {
