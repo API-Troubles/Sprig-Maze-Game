@@ -3,20 +3,20 @@ First time? Check out the tutorial game:
 https://sprig.hackclub.com/gallery/getting_started
 
 
-@title: Maze Game
+@title: Escape Arcade Prision!
 @author: Felix Gao
 @tags: ["Puzzle", "Prison"]
 @addedOn: 2024-00-00
 */
 
 // People lol
-const Player = "p";
-const Player2 = "o";
-const Guard = "g";
+const player = "p";
+const player2 = "o";
+const guard = "g";
 
 // Misc
-const LevelUp = "l"
-const Wall = "w";
+const levelUp = "l"
+const wall = "w";
 
 // Lasers!
 const laserVert = "v";
@@ -26,15 +26,15 @@ const laserHorz = "h";
 const laserHorzOff = "j";
 
 // This door is never unlockable
-const Door = "d";
-const DoorHorz = "s";
+const door = "d";
+const doorHorz = "s";
   
-const DoorLocked = "z";
-const DoorLockedHorz = "x";
+const doorLocked = "z";
+const doorLockedHorz = "x";
 
-const Key = "k";
-const Objective = "m";
-const Hammer = "u";
+const key = "k";
+const objective = "m";
+const hammer = "u";
 
 // Music!
 const music = {
@@ -79,7 +79,7 @@ const music = {
 }
 
 setLegend(
-  [Player, bitmap`
+  [player, bitmap`
 ................
 ................
 ..666666666666..
@@ -96,7 +96,7 @@ setLegend(
 ..666666666666..
 ................
 ................`],
-  [Player2, bitmap`
+  [player2, bitmap`
 ................
 ................
 ..666666666666..
@@ -113,7 +113,24 @@ setLegend(
 ..666666666666..
 ................
 ................`],
-  [Wall, bitmap`
+  [guard, bitmap`
+................
+................
+..333333333333..
+..333333333333..
+..333333333333..
+..333333003003..
+..333333003003..
+..333333333333..
+..333333333333..
+..333333333333..
+..333333333333..
+..333333333333..
+..333333333333..
+..333333333333..
+................
+................`],
+  [wall, bitmap`
 0000000000000000
 0000000000000000
 0000000000000000
@@ -198,7 +215,7 @@ L..............L
 ................
 .......111......
 ......LLLLL.....`],
-  [LevelUp, bitmap`
+  [levelUp, bitmap`
 ................
 .DDD..DDDD..DDD.
 .D............D.
@@ -215,7 +232,7 @@ L..............L
 .D............D.
 .DDD..DDDD..DDD.
 ................`],
-  [Door, bitmap`
+  [door, bitmap`
 ....LLLLLLL.....
 ....L11111L.....
 ....L11111L.....
@@ -232,7 +249,7 @@ L..............L
 ....L11111L.....
 ....L11111L.....
 ....LLLLLLL.....`],
-  [DoorHorz, bitmap`
+  [doorHorz, bitmap`
 ................
 ................
 ................
@@ -249,7 +266,7 @@ LLLLLLLLLLLLLLLL
 ................
 ................
 ................`],
-  [DoorLocked, bitmap`
+  [doorLocked, bitmap`
 .....LLLLLLL....
 .....L11111L....
 .....L11111L....
@@ -266,7 +283,7 @@ LLLLLLLLLLLLLLLL
 .....L11111L....
 .....L11111L....
 .....LLLLLLL....`],
-  [DoorLockedHorz, bitmap`
+  [doorLockedHorz, bitmap`
 ................
 ................
 ................
@@ -283,7 +300,7 @@ LLLLLLL6LLLLLLLL
 ................
 ................
 ................`],
-  [Key, bitmap`
+  [key, bitmap`
 ................
 ................
 ................
@@ -300,7 +317,7 @@ LLLLLLL6LLLLLLLL
 ................
 ................
 ................`],
-  [Objective, bitmap`
+  [objective, bitmap`
 ................
 .......99.......
 .......99.......
@@ -317,24 +334,7 @@ LLLLLLL6LLLLLLLL
 .......99.......
 ................
 ................`],
-  [Guard, bitmap`
-................
-................
-..333333333333..
-..333333333333..
-..333333333333..
-..333333003003..
-..333333333333..
-..333333333333..
-..333333333333..
-..333333333333..
-..333333333333..
-..333333333333..
-..333333333333..
-..333333333333..
-................
-................`],
-  [Hammer, bitmap`
+  [hammer, bitmap`
 ................
 .....111........
 .....1111.......
@@ -449,7 +449,6 @@ wwwwvwwwwwwww
 wvwwwsswwwwww
 ...w....w....
 ...w....w....`
-  
 ]
 
 
@@ -457,9 +456,11 @@ const guardPath = [
   null,
   null,
   [
-    [0,0],
-    [0,1],
-    [0,2]
+    [7,4],
+    [6,4],
+    [5,4],
+    [4,4],
+    [3,4]
   ]
 ]
 
@@ -500,7 +501,8 @@ ww...........
 // Misc settings
 var HasKey = false;
 var tutorial = true;
-let Game = null;
+let game = null;
+let guardAI = null;
 let iterator = null;
 
 // Tutorial prompt
@@ -512,9 +514,9 @@ addText("< Locked doors", options = { x: x_align, y: 9, color: color`0` });
 addText("< Key = open", options = { x: x_align, y: 12, color: color`0` });
 addText("Press 'L' to start!", options = { x: 1, y: 14, color: color`0` });
 
-setSolids([Player, Player2, Wall, Door, DoorHorz, DoorLocked, DoorLockedHorz]);
+setSolids([player, player2, guard, wall, door, doorHorz, doorLocked, doorLockedHorz]);
 setPushables({
-  [Player]: []
+  [player]: []
 })
 
 const playback = playTune(music.background, Infinity)
@@ -523,36 +525,44 @@ let timer = 600;
 
 // inputs for player movement control
 onInput("w", () => {
-  try {
-    getFirst(Player).y -= 1;
-  } catch (error) {
-    getFirst(Player2).y -= 1;
+  if (!tutorial) {
+    try {
+      getFirst(player).y -= 1;
+    } catch (error) {
+      getFirst(player2).y -= 1;
+    }
   }
 });
 
 onInput("a", () => {
-  try {
-    getFirst(Player).x -= 1;
-    getFirst("p").type = "o";
-  } catch (error) {
-    getFirst(Player2).x -= 1;
+  if (!tutorial) {
+    try {
+      getFirst(player).x -= 1;
+      getFirst("p").type = "o";
+    } catch (error) {
+      getFirst(player2).x -= 1;
+    }
   }
 });
 
 onInput("s", () => {
-  try {
-    getFirst(Player).y += 1;
-  } catch (error) {
-    getFirst(Player2).y += 1;
+  if (!tutorial) {
+    try {
+      getFirst(player).y += 1;
+    } catch (error) {
+      getFirst(player2).y += 1;
+    }
   }
 });
 
 onInput("d", () => {
-  try {
-    getFirst(Player2).x += 1;
-    getFirst("o").type = "p";
-  } catch (error) {
-    getFirst(Player).x += 1;
+  if (!tutorial) {
+    try {
+      getFirst(player2).x += 1;
+      getFirst("o").type = "p";
+    } catch (error) {
+      getFirst(player).x += 1;
+    }
   }
 });
 
@@ -565,13 +575,37 @@ onInput("l", () => { // Start game!
   if (tutorial) {
     setMap(levels[0]);
     clearText()
-    Game = setInterval(updateGame, 1000);
+    game = setInterval(updateGame, 1000);
+    guardAI = setInterval(runGuard, 2000);
     var timer = 600;
     iterator = cyclicIteration(guardPath[level]);
     console.log(iterator);
     tutorial = false;
   }
 });
+
+function getPlayerSprite() {
+  let playerModel = null;
+  if (getFirst("p") !== undefined) {
+      playerModel = getFirst("p");
+  } else if (getFirst("o") !== undefined) {
+      playerModel = getFirst("p");
+  } else {
+    throw new Error('No player sprite');
+  }
+  console.log(`Player Coords: (${playerModel.x}, ${playerModel.y})`)
+  return {x: playerModel.x, y: playerModel.y};
+}
+
+function blockHas(block, item) {
+  for (let sprite of block) {
+    if (sprite.type == item) {
+      return true;
+    }
+  }
+  return false;
+}
+
 
 
 // Iterate infinitely front and back
@@ -615,8 +649,10 @@ function setCaught() {
   addText("Press 'L' to", options = { x: 4, y: 5, color: color`0` });
   addText("lockpick out", options = { x: 4, y: 6, color: color`0` })
   setMap(misc.lost);
-  clearInterval(Game);
+  clearInterval(game);
+  clearInterval(guardAI);
   tutorial = true;
+  level = 0;
 }
 
 /* Credit for this function: Tutorial :D */
@@ -627,6 +663,7 @@ function nextLevel() {
 
   if (currentLevel !== undefined) {
     iterator = cyclicIteration(guardPath[level]);
+    guardAI = 
     setMap(currentLevel);
   } else {
     addText("You WIN!", { y: 4, color: color`D` });
@@ -640,34 +677,28 @@ function nextLevel() {
 
 afterInput(() => {
   // If touch active laser then player die 
-  if (getFirst("p") !== undefined) {
-    var items_insides = getTile(getFirst("p").x, getFirst("p").y);
-  } else if (getFirst("o") !== undefined) {
-    var items_insides = getTile(getFirst("o").x, getFirst("o").y);
-  } else {
-    throw new Error('No player sprite');
+  let playerSprite = getPlayerSprite()
+  let itemsInside = getTile(player_sprite.x, player_sprite.y);
+  
+  if (blockHas(itemsInside, "h") || blockHas(itemsInside, "h")) {
+    setCaught()
   }
-  for (let sprite of items_insides) {
-    if (sprite.type == "h" || sprite.type == "v") {
-      setCaught()
+  /* If touch key then open all doors*/
+  if (blockHas(itemsInside, "k")) {
+    try {
+      //getAll("z").forEach((door) => console.log(element));
+      getFirst("z").remove();
+    } catch (error) {
+      console.log(error);
     }
-  }
-  /* If touch key then add key to inv */
-  for (let sprite of items_insides) {
-    if (sprite.type == "k") {
-      try {
-        getFirst("z").remove();
-      } catch (error) {
-        console.log(error);
-      }
-      try {
-        getFirst("x").remove();
-      } catch (error) {
-        console.log(error);
-      }
-      sprite.remove();
+    try {
+      getFirst("x").remove();
+    } catch (error) {
+      console.log(error);
     }
+    sprite.remove();
   }
+}
 
   /* If touch checkpoint promote next level! */
   for (let sprite of items_insides) {
@@ -733,6 +764,5 @@ function updateGame() {
       setCaught();
     }
   }
-  runGuard();
   timer--;
 }          
