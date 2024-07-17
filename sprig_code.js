@@ -3,20 +3,20 @@ First time? Check out the tutorial game:
 https://sprig.hackclub.com/gallery/getting_started
 
 
-@title: Escape Arcade Prision!
+@title: Maze Game
 @author: Felix Gao
 @tags: ["Puzzle", "Prison"]
 @addedOn: 2024-00-00
 */
 
 // People lol
-const player = "p";
-const player2 = "o";
-const guard = "g";
+const Player = "p";
+const Player2 = "o";
+const Guard = "g";
 
 // Misc
-const levelUp = "l"
-const wall = "w";
+const LevelUp = "l"
+const Wall = "w";
 
 // Lasers!
 const laserVert = "v";
@@ -26,60 +26,18 @@ const laserHorz = "h";
 const laserHorzOff = "j";
 
 // This door is never unlockable
-const door = "d";
-const doorHorz = "s";
+const Door = "d";
+const DoorHorz = "s";
   
-const doorLocked = "z";
-const doorLockedHorz = "x";
+const DoorLocked = "z";
+const DoorLockedHorz = "x";
 
-const key = "k";
-const objective = "m";
-const hammer = "u";
-
-// Music!
-const music = {
-  caught: tune`
-500: A4-500 + G4-500 + F4-500 + E4-500,
-500,
-500: G4-500 + F4-500 + E4-500 + D4-500,
-14500`,
-  background: tune`
-500: C5/500,
-500: B4/500,
-500: A4/500,
-500: B4/500,
-1000,
-500: C5/500,
-500: B4/500,
-500: A4/500,
-500: B4/500,
-1000,
-500: C5/500,
-500: B4/500,
-500: A4/500,
-1500,
-500: C5/500,
-500: B4/500,
-500: A4/500,
-1500,
-500: C5/500,
-500: B4/500,
-500: A4/500,
-1500,
-500: C5/500,
-500: B4/500`,
-  victory: tune`
-410.958904109589: E4-410.958904109589,
-410.958904109589: F4-410.958904109589,
-410.958904109589: B4-410.958904109589,
-410.958904109589: C5-410.958904109589 + C4^410.958904109589,
-410.958904109589,
-410.958904109589: C4-410.958904109589 + C5^410.958904109589,
-10684.931506849314`
-}
+const Key = "k";
+const Objective = "m";
+const Hammer = "u";
 
 setLegend(
-  [player, bitmap`
+  [Player, bitmap`
 ................
 ................
 ..666666666666..
@@ -96,7 +54,7 @@ setLegend(
 ..666666666666..
 ................
 ................`],
-  [player2, bitmap`
+  [Player2, bitmap`
 ................
 ................
 ..666666666666..
@@ -113,24 +71,7 @@ setLegend(
 ..666666666666..
 ................
 ................`],
-  [guard, bitmap`
-................
-................
-..333333333333..
-..333333333333..
-..333333333333..
-..333333003003..
-..333333003003..
-..333333333333..
-..333333333333..
-..333333333333..
-..333333333333..
-..333333333333..
-..333333333333..
-..333333333333..
-................
-................`],
-  [wall, bitmap`
+  [Wall, bitmap`
 0000000000000000
 0000000000000000
 0000000000000000
@@ -215,7 +156,7 @@ L..............L
 ................
 .......111......
 ......LLLLL.....`],
-  [levelUp, bitmap`
+  [LevelUp, bitmap`
 ................
 .DDD..DDDD..DDD.
 .D............D.
@@ -232,7 +173,7 @@ L..............L
 .D............D.
 .DDD..DDDD..DDD.
 ................`],
-  [door, bitmap`
+  [Door, bitmap`
 ....LLLLLLL.....
 ....L11111L.....
 ....L11111L.....
@@ -249,7 +190,7 @@ L..............L
 ....L11111L.....
 ....L11111L.....
 ....LLLLLLL.....`],
-  [doorHorz, bitmap`
+  [DoorHorz, bitmap`
 ................
 ................
 ................
@@ -266,7 +207,7 @@ LLLLLLLLLLLLLLLL
 ................
 ................
 ................`],
-  [doorLocked, bitmap`
+  [DoorLocked, bitmap`
 .....LLLLLLL....
 .....L11111L....
 .....L11111L....
@@ -283,7 +224,7 @@ LLLLLLLLLLLLLLLL
 .....L11111L....
 .....L11111L....
 .....LLLLLLL....`],
-  [doorLockedHorz, bitmap`
+  [DoorLockedHorz, bitmap`
 ................
 ................
 ................
@@ -300,7 +241,7 @@ LLLLLLL6LLLLLLLL
 ................
 ................
 ................`],
-  [key, bitmap`
+  [Key, bitmap`
 ................
 ................
 ................
@@ -317,7 +258,7 @@ LLLLLLL6LLLLLLLL
 ................
 ................
 ................`],
-  [objective, bitmap`
+  [Objective, bitmap`
 ................
 .......99.......
 .......99.......
@@ -334,7 +275,24 @@ LLLLLLL6LLLLLLLL
 .......99.......
 ................
 ................`],
-  [hammer, bitmap`
+  [Guard, bitmap`
+................
+................
+..333333333333..
+..333333333333..
+..333333333333..
+..333333003003..
+..333333333333..
+..333333333333..
+..333333333333..
+..333333333333..
+..333333333333..
+..333333333333..
+..333333333333..
+..333333333333..
+................
+................`]
+  [Hammer, bitmap`
 ................
 .....111........
 .....1111.......
@@ -395,26 +353,26 @@ p.w....w.....
 ..w....w.....
 ..wwxwwwwvwww
 ..h..........
-..h...g......
+..h........g.
 vvwwvwwwwswww
 ..w....w.....
 llw....w.....`,
   map`
 p.w...w...w..
 ..w...w...w..
-..ww..wwwswww
+..www.wwwswww
 ...h...h.....
 ...h...h.....
-wwwwxxwwwvwww
+wwwwwxwwwvwww
 .......w.....
 .......w...k.
 llwwwwww.....`,
   map`
 ..w..........
 p.wwwwwwwwwww
-..h........hl
-..h........hl
-..h........hl
+..h........h.
+..h........h.
+..h........h.
 sswwwwww.wwww
 ..w.......w..
 ..w.......w..
@@ -440,38 +398,34 @@ w.k.w..g....w
 w...w.......w
 wwwwwwwwwwwww`,
   map`
-...w.....w...
-...w..k..w...
-wwwwvwwcwwwww
+...w....w....
+...w..k.w....
+wwwwvwwwwwwww
 ..h........zl
-p.h......g.zl
+..h......g.zl
 ..h........zl
-wcwwwsswwwsww
+wvwwwsswwwwww
 ...w....w....
 ...w....w....`
+  
 ]
 
+// Misc settings
 
 const guardPath = [
   null,
   null,
   [
-    [7,4],
-    [6,4],
-    [5,4],
-    [4,4],
-    [3,4]
-  ],
-  [
-    [6,5],
-    [7,5],
-    [8,5],
-    [9,5],
-    [10,5],
-    [11,5],
-    [12,5]
-  ],
-  
+    [0,0],
+    [0,1],
+    [0,2]
+  ]
+]
+
+const screenText = [
+  [{}, {}, {}],
+  null,
+  [{}]
 ]
 
 const misc = {
@@ -505,79 +459,126 @@ ww...........
 .z...........
 .............
 .k...........
-.............`
+.............`,
+  tutorial: map``
 }
 
-// Misc settings
+const music = {
+  caught: tune`
+500: A4-500 + G4-500 + F4-500 + E4-500,
+500,
+500: G4-500 + F4-500 + E4-500 + D4-500,
+14500`,
+  background: tune`
+500: C5-500 + A4~500 + G5~500 + F5-500,
+500: G4/500 + F5-500,
+500: G4/500 + G5~500,
+500: D4-500 + B4/500,
+500: C5-500 + A4~500 + G5~500 + F5-500,
+500: G4/500 + F5-500,
+500: G4/500 + G5~500,
+500: D4-500 + B4/500,
+500: C5-500 + A4~500 + G5~500 + F5-500,
+500: G4/500 + F5-500,
+500: G4/500 + G5~500,
+500: D4-500 + B4/500,
+500: C5-500 + A4~500 + G5~500 + F5-500,
+500: G4/500 + F5-500,
+500: G4/500 + G5~500,
+500: D4-500 + B4/500,
+500: C5-500 + A4~500 + G5~500 + F5-500,
+500: G4/500 + F5-500,
+500: G4/500 + G5~500,
+500: D4-500 + B4/500,
+500: C5-500 + A4~500 + G5~500 + F5-500,
+500: G4/500 + F5-500,
+500: G4/500 + G5~500,
+500: D4-500 + B4/500,
+500: C5-500 + A4~500 + G5~500 + F5-500,
+500: G4/500 + F5-500,
+500: G4/500 + G5~500,
+500: D4-500 + B4/500,
+500: C5-500 + A4~500 + G5~500 + F5-500,
+500: G4/500 + F5-500,
+500: G4/500 + G5~500,
+500: D4-500 + B4/500`,
+  victory: tune`
+410.958904109589: E4-410.958904109589,
+410.958904109589: F4-410.958904109589,
+410.958904109589: B4-410.958904109589,
+410.958904109589: C5-410.958904109589 + C4^410.958904109589,
+410.958904109589,
+410.958904109589: C4-410.958904109589 + C5^410.958904109589,
+10684.931506849314`
+}
+
 var HasKey = false;
 var tutorial = true;
-let game = null;
-let guardAI = null;
+let Game = null;
 let iterator = null;
-
-// Tutorial prompt
-let x_align = 4;
-setMap(misc.tutorial)
-addText("< You!", options = { x: x_align, y: 3, color: color`0` });
-addText("< Avoid lasers", options = { x: x_align, y: 6, color: color`0` });
-addText("< Locked doors", options = { x: x_align, y: 9, color: color`0` });
-addText("< Key = open", options = { x: x_align, y: 12, color: color`0` });
-addText("Press 'L' to start!", options = { x: 1, y: 14, color: color`0` });
-
-setSolids([player, player2, guard, wall, door, doorHorz, doorLocked, doorLockedHorz]);
-setPushables({
-  [player]: []
-});
+let timer = 600;
 
 const playback = playTune(music.background, Infinity);
 
-let timer = 600;
+setSolids([Player, Player2, Wall, Door, DoorHorz, DoorLocked, DoorLockedHorz]);
 
+setPushables({
+  [Player]: []
+});
+
+// Tutorial prompt
+let x_align = 4;
+function tutorialFriendly() {
+  setMap(misc.tutorialFriendly)
+  addText("< You!", options = { x: x_align, y: 3, color: color`0` });
+  addText("< Next Lv", options = { x: x_align, y: 6, color: color`0` });
+  addText("< Locked door", options = { x: x_align, y: 9, color: color`0` });
+  addText("< Key = open", options = { x: x_align, y: 12, color: color`0` });
+  addText("Press 'L' to play!", options = { x: 1, y: 14, color: color`0` });
+}
+
+function tutorialHostile() {
+  setMap(misc.tutorialHostile)
+  addText("< Avoid Guards", options = { x: x_align, y: 3, color: color`0` });
+  addText("< Avoid lasers", options = { x: x_align, y: 6, color: color`0` });
+  addText("Press 'L' to play!", options = { x: 1, y: 14, color: color`0` });
+}
 
 // inputs for player movement control
 onInput("w", () => {
-  if (!tutorial) {
-    try {
-      getFirst(player).y -= 1;
-    } catch (error) {
-      getFirst(player2).y -= 1;
-    }
+  try {
+    getFirst(Player).y -= 1;
+  } catch (error) {
+    getFirst(Player2).y -= 1;
   }
 });
 
 onInput("a", () => {
-  if (!tutorial) {
-    try {
-      getFirst(player).x -= 1;
-      getFirst("p").type = "o";
-    } catch (error) {
-      getFirst(player2).x -= 1;
-    }
+  try {
+    getFirst(Player).x -= 1;
+    getFirst("p").type = "o";
+  } catch (error) {
+    getFirst(Player2).x -= 1;
   }
 });
 
 onInput("s", () => {
-  if (!tutorial) {
-    try {
-      getFirst(player).y += 1;
-    } catch (error) {
-      getFirst(player2).y += 1;
-    }
+  try {
+    getFirst(Player).y += 1;
+  } catch (error) {
+    getFirst(Player2).y += 1;
   }
 });
 
 onInput("d", () => {
-  if (!tutorial) {
-    try {
-      getFirst(player2).x += 1;
-      getFirst("o").type = "p";
-    } catch (error) {
-      getFirst(player).x += 1;
-    }
+  try {
+    getFirst(Player2).x += 1;
+    getFirst("o").type = "p";
+  } catch (error) {
+    getFirst(Player).x += 1;
   }
 });
 
-// I'm too lazy to replay my entire game every edit lol
 onInput("j", () => {
   nextLevel();
 });
@@ -586,8 +587,7 @@ onInput("l", () => { // Start game!
   if (tutorial) {
     setMap(levels[0]);
     clearText()
-    game = setInterval(updateGame, 1000);
-    guardAI = setInterval(runGuard, 2000);
+    Game = setInterval(updateGame, 1000);
     var timer = 600;
     iterator = cyclicIteration(guardPath[level]);
     console.log(iterator);
@@ -595,36 +595,11 @@ onInput("l", () => { // Start game!
   }
 });
 
-// Obtain the player, needed as we use 2 player models
-// One for left eyes, another for right eyes, lol
-function getPlayerSprite() {
-  let playerModel = null;
-  if (getFirst("p") !== undefined) {
-      playerModel = getFirst("p");
-  } else if (getFirst("o") !== undefined) {
-      playerModel = getFirst("o");
-  } else {
-    throw new Error('No player sprite');
-  }
-  console.log(`Player Coords: (${playerModel.x}, ${playerModel.y})`)
-  return {x: playerModel.x, y: playerModel.y};
-}
-
-// Check if a block has a certain sprite
-function blockHas(block, item) {
-  for (let sprite of block) {
-    if (sprite.type == item) {
-      return true;
-    }
-  }
-  return false;
-}
-
 
 // Iterate infinitely front and back
 // CREDIT: ChatGPT
 function cyclicIteration(array) {
-  if (array == null) {
+  if (array === null) {
     return null
   }
   let index = 0;
@@ -646,17 +621,27 @@ function cyclicIteration(array) {
   };
 }
 
-function runGuard() {
-  if (iterator !== null) {
-    const coords = iterator.next().value;
-    const guard = getFirst("g");
-    if (guard != null) {
-      guard.x = coords[0];
-      guard.y = coords[1];
+function blockHas(block, sprite) {
+  for (let sprites of block) {
+    if (sprites.type == sprite) {
+      return true;
     }
+  return false;
+
+function getPlayer() {
+  let player = null;
+  if (getFirst("p") != undefined) {
+    var player = getFirst("p");
+  } else if (getFirst("o") != undefined) {
+    var player = getFirst("o");
+  } else {
+    throw new Error('No player sprite');
   }
+  return {x: player.x, y: player.y}
 }
 
+
+// Aw man I got caught by a guard!
 function setCaught() {
   playback.end();
   playTune(music.caught);
@@ -664,10 +649,8 @@ function setCaught() {
   addText("Press 'L' to", options = { x: 4, y: 5, color: color`0` });
   addText("lockpick out", options = { x: 4, y: 6, color: color`0` })
   setMap(misc.lost);
-  clearInterval(game);
-  clearInterval(guardAI);
+  clearInterval(Game);
   tutorial = true;
-  level = 0;
 }
 
 /* Credit for this function: Tutorial :D */
@@ -678,7 +661,6 @@ function nextLevel() {
 
   if (currentLevel !== undefined) {
     iterator = cyclicIteration(guardPath[level]);
-    guardAI = 
     setMap(currentLevel);
   } else {
     addText("You WIN!", { y: 4, color: color`D` });
@@ -688,21 +670,33 @@ function nextLevel() {
   }
 }
 
+
 /* After ALL THAT SETUP ABOVE ME comes the fun part! */
 
-afterInput(() => {
-  let playerSprite = getPlayerSprite()
-  let itemsInside = getTile(playerSprite.x, playerSprite.y);
+// Guard logic
+function runGuard() {
+  if (iterator !== null) {
+    const coords = iterator.next();
+    getFirst("g").x = coords[0];
+    getFirst("g").y = coords[1];
+  } else {
+    console.log(iterator);
+  }
+}
 
-  // If touching lasers then player caught
-  if (blockHas(itemsInside, "h") || blockHas(itemsInside, "v")) {
-    setCaught();
+// Most player physics is here
+afterInput(() => {
+  player = getPlayer();
+  block = getTile(player.x, player.y);
+  // If touch active laser then player die 
+  if (blockHas(block, "h") || blockHas(block, "v")) {
+    setCaught()
   }
   
-  /* If touch key then open all doors*/
-  if (blockHas(itemsInside, "k")) {
+  // If touch key then open all door
+  if (blockHas(block, "k") {
     try {
-      getAll("z").forEach((door) => door.remove());
+      getAll("x").forEach((door) => door.remove());
     } catch (error) {
       console.log(error);
     }
@@ -713,18 +707,20 @@ afterInput(() => {
     }
     getFirst("k").remove();
   }
+}
 
-  /* If touch checkpoint then promote next level! */
-  if (blockHas(itemsInside, "l")) {
-    nextLevel();
+  // If touch checkpoint promote next level!
+  if (blockHas(block, "l") {
+      nextLevel();
   }
-  
+
+  // If in 3x3 range of guard, caught!
   let guard = getFirst("g");
   if (guard != null) {
     for (let x = guard.x - 1; x <= guard.x + 1; x++) {
       for (let y = guard.y - 1; y <= guard.y + 1; y++) {
         const sprites = getTile(x, y);
-    
+
         // Can't use the func I built D:
         for (let sprite of sprites) {
           if (sprite.type == "p" || sprite.type == "o") {
@@ -737,60 +733,47 @@ afterInput(() => {
 });
 
 /* Enable and disable all lasers every 1 sec, run timer */
-/* TODO: Ability to alternate lasers */
 /* CREDIT TIMER: Thanks to https://sprig.hackclub.com/~/pIrXiIjFINorvL2bCYM9! */
 var laserOn = false;
-var guardPos = 0;
 function updateGame() {
   timerText = addText(`Escape in ${timer} secs`, { x: 1, y: 0, color: color`2`});
   if (laserOn) {
     try { // Convert all horizontal off lasers to on
-      getAll("j").forEach(sprite => {
-        sprite.type = "h";
-      });
+      getAll("j").forEach(sprite => {sprite.type = "h");
     } catch (error) {
       console.log(error);
     }
     try { // Convert all vertical off lasers to on
-      getAll("c").forEach(sprite => {
-        sprite.type = "v";
-      });
+      getAll("c").forEach(sprite => {sprite.type = "v");
     } catch (error) {
       console.log(error);
     }
     laserOn = false;
   } else {
     try { // Convert all horizontal on lasers to off
-      getAll("h").forEach(sprite => {
-        sprite.type = "j";
-      });
+      getAll("h").forEach(sprite => sprite.type = "j");
     } catch (error) {
       console.log(error);
     }
     try { // Convert all vertical on lasers to off
-      getAll("v").forEach(sprite => {
-        sprite.type = "c";
-      });
+      getAll("v").forEach(sprite => sprite.type = "c");
     } catch (error) {
       console.log(error);
     }
     laserOn = true;
   }
 
-  if (getFirst("p") !== undefined) {
-    var items_insides = getTile(getFirst("p").x, getFirst("p").y);
-  } else if (getFirst("o") !== undefined) {
-    var items_insides = getTile(getFirst("o").x, getFirst("o").y);
-  } else {
-    throw new Error('No player sprite');
+  player = getPlayer();
+  block = getTile(player.x, player.y);
+
+  //  Check if lasers touching player every sec
+  if (blockHas(block, "h") || blockHas(block, "v")) {
+    setCaught()
   }
-  for (let sprite of items_insides) {
-    if (sprite.type == "h" || sprite.type == "v") {
-      setCaught()
-    }
-    if (timer <= 0) {
-      setCaught();
-    }
+
+  // Check if times out and Hakkuun has woken up!
+  if (timer <= 0) {
+    setCaught();
   }
   timer--;
 }          
