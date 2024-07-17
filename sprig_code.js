@@ -457,13 +457,22 @@ ww...........
 .............
 .p...........
 .............
-.h...........
+.l...........
 .............
 .z...........
 .............
 .k...........
 .............`,
-  tutorialHostile: map``
+  tutorialHostile: map`
+.............
+.g...........
+.............
+.h...........
+.............
+.............
+.............
+.............
+.............`
 }
 
 const music = {
@@ -532,23 +541,30 @@ setPushables({
 
 // Tutorial prompt
 let x_align = 4;
-function tutorialFriendly() {
-  setMap(misc.tutorialFriendly)
-  addText("< You!", options = { x: x_align, y: 3, color: color`0` });
-  addText("< Next Lv", options = { x: x_align, y: 6, color: color`0` });
-  addText("< Locked door", options = { x: x_align, y: 9, color: color`0` });
-  addText("< Key = open", options = { x: x_align, y: 12, color: color`0` });
-  addText("Press 'L' to play!", options = { x: 1, y: 14, color: color`0` });
-}
 
-function tutorialHostile() {
-  setMap(misc.tutorialHostile)
-  addText("< Avoid Guards", options = { x: x_align, y: 3, color: color`0` });
-  addText("< Avoid lasers", options = { x: x_align, y: 6, color: color`0` });
-  addText("Press 'L' to play!", options = { x: 1, y: 14, color: color`0` });
-}
+e = setInterval(tutorialAnimation, 4000);
 
-tutorialFriendly();
+let tutorialFlag = false;
+function tutorialAnimation() {
+  if (tutorialFlag) {
+    console.log(misc.tutorialFriendly);
+    setMap(misc.tutorialFriendly);
+    addText("< You!", options = { x: x_align, y: 3, color: color`0` });
+    addText("< Next Lv", options = { x: x_align, y: 6, color: color`0` });
+    addText("< Locked door", options = { x: x_align, y: 9, color: color`0` });
+    addText("< Key = open", options = { x: x_align, y: 12, color: color`0` });
+    addText("Press 'L' to play!", options = { x: 1, y: 14, color: color`0` });
+    tutorialFlag = false;
+  } else {
+    console.log(misc.tutorialHostile);
+    setMap(misc.tutorialHostile);
+    addText("< Avoid Guards", options = { x: x_align, y: 3, color: color`0` });
+    addText("< Avoid lasers", options = { x: x_align, y: 6, color: color`0` });
+    addText("Press 'L' to play!", options = { x: 1, y: 14, color: color`0` });
+    tutorialFlag = true;
+    
+  }
+}
 
 // inputs for player movement control
 onInput("w", () => {
@@ -791,4 +807,4 @@ function updateGame() {
     setCaught();
   }
   timer--;
-}          
+}
