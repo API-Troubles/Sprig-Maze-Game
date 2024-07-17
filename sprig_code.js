@@ -11,6 +11,7 @@ https://sprig.hackclub.com/gallery/getting_started
 
 // People lol
 const Player = "p";
+const Player2 = "o";
 const Guard = "g";
 
 // Misc
@@ -94,6 +95,23 @@ setLegend(
 ..666666666666..
 ..666666006006..
 ..666666006006..
+..666666666666..
+..666666666666..
+..666666666666..
+..666666666666..
+..666666666666..
+..666666666666..
+................
+................`],
+  [Player2, bitmap`
+................
+................
+..666666666666..
+..666666666666..
+..666666666666..
+..666666666666..
+..600600666666..
+..600600666666..
 ..666666666666..
 ..666666666666..
 ..666666666666..
@@ -410,7 +428,7 @@ addText("< Locked doors", options = { x: x_align, y: 9, color: color`0` });
 addText("< Key = open", options = { x: x_align, y: 12, color: color`0` });
 addText("Press 'L' to start!", options = { x: 1, y: 14, color: color`0` });
 
-setSolids([Player, Wall, Door, DoorHorz, DoorLocked, DoorLockedHorz]);
+setSolids([Player, Player2, Wall, Door, DoorHorz, DoorLocked, DoorLockedHorz]);
 setPushables({
   [Player]: []
 })
@@ -421,19 +439,37 @@ let timer = 600;
 
 // inputs for player movement control
 onInput("w", () => {
-  getFirst(Player).y -= 1;
+  try {
+    getFirst(Player).y -= 1;
+  } catch (error) {
+    getFirst(Player2).y -= 1;
+  }
 });
 
 onInput("a", () => {
-  getFirst(Player).x -= 1;
+  try {
+    getFirst(Player).x -= 1;
+    getFirst("p").type = "o";
+  } catch (error) {
+    getFirst(Player2).x -= 1;
+  }
 });
 
 onInput("s", () => {
-  getFirst(Player).y += 1;
+  try {
+    getFirst(Player).y += 1;
+  } catch (error) {
+    getFirst(Player2).y += 1;
+  }
 });
 
 onInput("d", () => {
-  getFirst(Player).x += 1;
+  try {
+    getFirst(Player2).x += 1;
+    getFirst("o").type = "p";
+  } catch (error) {
+    getFirst(Player).x += 1;
+  }
 });
 
 // I'm too lazy to replay my entire game every edit lol
@@ -459,7 +495,7 @@ function setCaught() {
   clearInterval(Game);
 }
 
-/* Credit for this function: Tutroial :D */
+/* Credit for this function: Tutorial :D */
 function nextLevel() {
   level = level + 1;
 
@@ -480,7 +516,13 @@ function nextLevel() {
 
 afterInput(() => {
   /* If touch active laser then player die */
-  const items_insides = getTile(getFirst("p").x, getFirst("p").y);
+  console.log(getFirst("p").x);
+  console.log(getFirst("o").x)
+  try {
+    const items_insides = getTile(getFirst("p").x, getFirst("p").y);
+  } catch (error) {
+    const items_insides = getTile(getFirst("o").x, getFirst("o").y);
+  }
   for (let sprite of items_insides) {
     if (sprite["_type"] == "h" || sprite["_type"] == "v") {
       setCaught()
@@ -551,7 +593,11 @@ function updateGame() {
     laserOn = true;
   }
 
-  const items_insides = getTile(getFirst("p").x, getFirst("p").y);
+  try {
+    const items_insides = getTile(getFirst("p").x, getFirst("p").y);
+  } catch (error) {
+    const items_insides = getTile(getFirst("o").x, getFirst("o").y);
+  }
   for (let sprite of items_insides) {
     if (sprite["_type"] == "h" || sprite["_type"] == "v") {
       setCaught()
