@@ -37,6 +37,8 @@ const doorLockedHorz = "x";
 const key = "k";
 const objective = "m";
 
+let vault = "y"
+
 // Minigame stuff
 // WIP!
 const lockPin = "r";
@@ -45,17 +47,18 @@ const goalLine = "t";
 
 let lockTimer = 15;
 let stopPin = false;
-let pinSelection = null;
 
+let pinSelection = null;
 let pinsFinished = 0;
 
 let pinSprite = null;
-let yPath = cyclicIteration([0, 1, 2, 3, 4])
+let yPath = cyclicIteration([0, 1, 2, 3, 4]);
 
 let attempts = 4;
 
 let pinTimer = null;
 let minigameTimer = null;
+
 
 setLegend(
   [player, bitmap`
@@ -386,6 +389,23 @@ LLLLLLL6LLLLLLLL
 ................
 ................
 ................
+................`],
+  [vault, bitmap`
+................
+.LLLLLLLLLLLLLL.
+.L111111111111L.
+.L111111111111L.
+.L111111111111L.
+.L111111111111L.
+.L111L11111111L.
+.L11LLL1111111L.
+.L1LL0LL111111L.
+.L11LLL1111111L.
+.L111L11111111L.
+.L111111111111L.
+.L111111111111L.
+.L111111111111L.
+.LLLLLLLLLLLLLL.
 ................`]
 )
 
@@ -1067,7 +1087,7 @@ afterInput(() => {
 
       getFirst("k").remove();
       splashText("Doors open!", 1000);
-      startLockGame();
+      //startLockGame();
     }
 
     // If touch checkpoint promote next level!
