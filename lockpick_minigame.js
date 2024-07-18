@@ -17,23 +17,6 @@ const lock = "l";
 const goalLine = "g";
 
 setLegend(
-  [lockpick, bitmap`
-................
-................
-................
-................
-............0...
-............0...
-............0...
-............0...
-0000000000000...
-0000000000000...
-................
-................
-................
-................
-................
-................`],
   [pin, bitmap`
 ......0000......
 ......0000......
@@ -110,12 +93,23 @@ setLegend(
 let level = 0
 const levels = [
   map`
-.p.p.p.l
+p.p.p.pl
 .......l
 gggggggl
 .......l
 .......l`,
 ]
+
+const music = {
+  correct: tune`
+500: F5-500 + C5-500 + G4/500,
+500: G5-500 + C5-500 + G4/500,
+15000`,
+  missed: tune`
+500: D5/500 + G4-500,
+500: G4/500 + D4-500,
+15000`
+}
 
 let timer = 15;
 let stopPin = false;
@@ -124,7 +118,7 @@ let pinSelection = null;
 let pinsFinished = 0;
 
 let pinSprite = null;
-let yPath = cyclicIteration([0, 1, 2, 3, 4])
+let yPath = cyclicIteration([0, 1, 2, 3, 4]);
 
 let attempts = 4;
 
@@ -133,29 +127,31 @@ let minigameTimer = setInterval(runTimer, 1000);
 setMap(levels[level]);
 
 // inputs for player movement control
-let victory = false;
-onInput("d", () => {
-  getTile(getFirst("p").x, getFirst("p").y).forEach(sprites => {
-    if (sprites.type == "g") {
-      victory = true;
+onInput("i", () => {
+  const pinSprite = getFirst("p");
+  getTile(pinSprite.x, pinSprite.y).forEach(sprites => {
+    
+    if (sprites.type == "g") { // If pin on there!
+      playTune(music.correct);
+      pinSprite.type = "o";
+      yPath = cyclicIteration([0, 1, 2, 3, 4]);
+      pinsFinished++;
+      
+    } else {
+      playTune(music.missed);
+      attempts--;
+      splashText(`${attempts}/4 trys left!`);
     }
-  });
-  if (victory) {
-    getFirst("p").type = "o";
-    victory = false;
-    yPath = cyclicIteration([0, 1, 2, 3, 4])
-    pinsFinished++;
+      
     if (pinsFinished == 2) { // When we finish more pins, the rest go faster
       clearInterval(pinTimer);
       pinTimer = setInterval(pinDown, 300);
-    } else if (pinsFinished >= 3) {
+    } else if (pinsFinished >= 3) { // BURRRR
       clearInterval(pinTimer);
       pinTimer = setInterval(pinDown, 250);
     }
-  } else {
-    attempts--;
-    splashText(`Nope. ${attempts}/4 trys left`);
-  }
+  });
+  
   if (attempts <= 0) {
     clearInterval(pinTimer);
     clearInterval(minigameTimer);
@@ -169,7 +165,7 @@ function pinDown() {
     pinSprite = getFirst("p");
     if (pinSprite != null) {
       pinSprite.y = yPath.next().value;
-    } else if (pinsFinished == 3) {
+    } else if (pinsFinished == 4) {
     clearInterval(pinTimer);
     clearInterval(minigameTimer);
     splashText("victory!");
