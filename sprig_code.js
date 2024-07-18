@@ -336,16 +336,15 @@ CCC.............
 let level = 0
 const levels = [
   map`
-wwwwwwwwwwwww
+w...........w
+w...........w
 w...........w
 w..........lw
-w...........w
-w...........w
-www.wwwswwwsw
-w...w...w...w
+w..........lw
+wwwswwwswwwsw
 w...w...w...w
 w..pw...w...w
-wwwwwwwwwwwww`,
+w...w...w...w`,
   map`
 ........w....
 ........w....
@@ -360,9 +359,9 @@ w...w...w....`,
 .......w..w.k
 .......w..w..
 wwwwww.wssw..
-.......j..w..
-p......jg.wvv
-wwwwwwxw..w..
+..........w..
+p.......g.wvv
+wwwwwxxw..w..
 .......w..w..
 .......w..h..
 llwwwwww..h..`,
@@ -474,7 +473,9 @@ const screenText = [
   [
     ["Guard!", { x: 1, y: 3, color: color`0`}]
   ], 
-  null,
+  [
+    ["Here!", { x: 5, y: 2, color: color`0`}]
+  ],
   null,
   null,
   null
@@ -497,11 +498,11 @@ w...........w
 w...........w
 w...........w
 w...........w
+w...........w
 wwwswwwswwwsw
 w...w...w...w
-w...w...w...w
 w..pw...w...w
-wwwwwwwwwwwww`,
+w...w...w...w`,
   victory: map`
 .w...........
 .w...........
@@ -528,7 +529,7 @@ ww...........
 .............
 .h...........
 .............
-.............
+.d...........
 .............
 .............
 .............`
@@ -559,7 +560,7 @@ const music = {
 500: D4-500 + B4/500,
 500: C5-500 + A4~500 + G5~500 + F5-500,
 500: G4/500 + F5-500,
-500: G4/500 + G5~500 + C5~500,
+500: G4/500 + G5~500,
 500: D4-500 + B4/500,
 500: C5-500 + A4~500 + G5~500 + F5-500,
 500: G4/500 + F5-500,
@@ -604,14 +605,15 @@ let x_align = 4;
 // Tutorial text is stored in a var for convenience
 let tutorialText = [
   [
-    ["< You!", { x: x_align, y: 3, color: color`0`}],
-    ["< Next Lv", { x: x_align, y: 6, color: color`0`}],
-    ["< Locked door", { x: x_align, y: 9, color: color`0`}],
-    ["< Key = open", { x: x_align, y: 12, color: color`0`}],
+    ["You!", { x: x_align, y: 3, color: color`0`}],
+    ["Next Lv", { x: x_align, y: 6, color: color`0`}],
+    ["Locked door", { x: x_align, y: 9, color: color`0`}],
+    ["Key = open", { x: x_align, y: 12, color: color`0`}],
   ],
   [
-    ["< Avoid Guards", { x: x_align, y: 3, color: color`0` }],
-    ["< Avoid lasers", { x: x_align, y: 6, color: color`0` }]
+    ["Avoid Guards", { x: x_align, y: 3, color: color`0` }],
+    ["Avoid lasers", { x: x_align, y: 6, color: color`0` }],
+    ["perma-lock door", { x: x_align, y: 9, color: color`0` }]
   ],
   [
     ["Escape Arcade JAIL:", { x: 0, y: 3, color: color`D` }],
@@ -709,6 +711,7 @@ onInput("l", () => {
     iterator = cyclicIteration(guardPath[level]);
     screenText[0].forEach((text) => addText(text[0], options=text[1]));
     tutorial = false;
+    
   } else if (restart) { // Restart game if caught
     level = 0;
     var timer = 600;
@@ -721,6 +724,13 @@ onInput("l", () => {
     restart = false;
   }
 });
+
+function splashText(text, time = 3000) {
+  let test = width();
+  addText(test, options={ x: 5, y: 15, color: color`6` })
+}
+
+splashText("test yellow hello");
 
 function blockHas(block, item) {
   for (let sprite of block) {
