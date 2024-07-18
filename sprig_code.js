@@ -477,12 +477,20 @@ const screenText = [
   null,
   null,
   null,
-  [
-    ["Is that the main hall?", { x: 3, y: 4, color: color`0`}]
-  ]
+  null
 ]
 
 const misc = {
+  welcome: map`
+.............
+.............
+.............
+.............
+.............
+.............
+.............
+.............
+.............`,
   lost: map`
 wwwwwwwwwwwww
 w...........w
@@ -551,7 +559,7 @@ const music = {
 500: D4-500 + B4/500,
 500: C5-500 + A4~500 + G5~500 + F5-500,
 500: G4/500 + F5-500,
-500: G4/500 + G5~500,
+500: G4/500 + G5~500 + C5~500,
 500: D4-500 + B4/500,
 500: C5-500 + A4~500 + G5~500 + F5-500,
 500: G4/500 + F5-500,
@@ -604,28 +612,41 @@ let tutorialText = [
   [
     ["< Avoid Guards", { x: x_align, y: 3, color: color`0` }],
     ["< Avoid lasers", { x: x_align, y: 6, color: color`0` }]
+  ],
+  [
+    ["Escape Arcade JAIL:", { x: 0, y: 3, color: color`D` }],
+    ["You have been caught", { x: 0, y: 5, color: color`0` }],
+    ["faking points. You", { x: 0, y: 6, color: color`0` }],
+    ["have been sentenced to", { x: 0, y: 7, color: color`0` }],
+    ["LIFE in Arcade jail.", { x: 0, y: 8, color: color`0` }],
+    ["Tip: tutorial loops", { x: 0, y: 12, color: color`9` }]
   ]
 ]
 
-setMap(misc.tutorialFriendly);
-tutorialText[0].forEach((text) => addText(text[0], options=text[1]));
-addText("Press 'L' to play!", options = { x: 1, y: 14, color: color`0` });
-let tutorialScreen = setInterval(tutorialAnimation, 4000);
+setMap(misc.welcome);
+tutorialText[2].forEach((text) => addText(text[0], options=text[1]));
+addText("Press 'L' to play!", options = { x: 1, y: 14, color: color`5` });
 
-let tutorialFlag = false;
+tutorialScreen = setInterval(tutorialAnimation, 4000);
+
+let tutorialFlag = 1;
 function tutorialAnimation() {
   clearText();
-  if (tutorialFlag) {
+  if (tutorialFlag == 1) {
     setMap(misc.tutorialFriendly);
     tutorialText[0].forEach((text) => addText(text[0], options=text[1]));
-    addText("Press 'L' to play!", options = { x: 1, y: 14, color: color`0` });
-    tutorialFlag = false;
-  } else {
+    addText("Press 'L' to play!", options = { x: 1, y: 14, color: color`5` });
+    tutorialFlag++;
+  } else if (tutorialFlag == 2) {
     setMap(misc.tutorialHostile);
     tutorialText[1].forEach((text) => addText(text[0], options=text[1]));
-    addText("Press 'L' to play!", options = { x: 1, y: 14, color: color`0` });
-    tutorialFlag = true;
-    
+    addText("Press 'L' to play!", options = { x: 1, y: 14, color: color`5` });
+    tutorialFlag++;
+  } else {
+    setMap(misc.welcome);
+    tutorialText[2].forEach((text) => addText(text[0], options=text[1]));
+    addText("Press 'L' to play!", options = { x: 1, y: 14, color: color`5` });
+    tutorialFlag = 1;
   }
 }
 // End tutorial!
@@ -786,6 +807,7 @@ function cyclicIteration(array) {
 function setCaught() {
   playback.end();
   playTune(music.caught);
+  clearText(); // Clear text which may be onscreen before adding screen
   addText("You got caught!", options = { x: 3, y: 3, color: color`3` });
   addText("Press 'L' to", options = { x: 4, y: 5, color: color`0` });
   addText("lockpick out", options = { x: 4, y: 6, color: color`0` })
@@ -814,6 +836,8 @@ function nextLevel() {
     playback.end();
     playTune(music.victory);
     setMap(misc.victory);
+    clearInterval(updateGame);
+    clearInterval(runGuard);
   }
 }
 
@@ -843,6 +867,22 @@ function runGuard() {
         getFirst("f").remove()
       } catch (error) {
         console.log(error);
+      }
+    }
+  }
+
+  let guard = getGuard();
+  if (guard != null) {
+    for (let x = guard.x - 1; x <= guard.x + 1; x++) {
+      for (let y = guard.y - 1; y <= guard.y + 1; y++) {
+        const sprites = getTile(x, y);
+
+        // Can't use the func I built D:
+        for (let sprite of sprites) {
+          if (sprite.type == "p" || sprite.type == "o") {
+            setCaught();
+          }
+        }
       }
     }
   }
@@ -878,7 +918,7 @@ afterInput(() => {
   }
 
   // If in 3x3 range of guard, caught!
-  let guard = getFirst("g");
+  let guard = getGuard();
   if (guard != null) {
     for (let x = guard.x - 1; x <= guard.x + 1; x++) {
       for (let y = guard.y - 1; y <= guard.y + 1; y++) {
@@ -938,5 +978,6 @@ function updateGame() {
   if (timer <= 0) {
     setCaught();
   }
+  
   timer--;
 }          
