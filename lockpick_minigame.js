@@ -1,7 +1,3 @@
-// This file contains code I wrote in a seperate game to test the idea of a lockpick minigame
-
-//Find the test game here: https://sprig.hackclub.com/share/8nEXPOoGSoXiEBSO3c8x
-
 /*
 First time? Check out the tutorial game:
 https://sprig.hackclub.com/gallery/getting_started
@@ -121,7 +117,7 @@ gggggggl
 .......l`,
 ]
 
-let timer = 20;
+let timer = 15;
 let stopPin = false;
 let pinSelection = null;
 
@@ -130,7 +126,9 @@ let pinsFinished = 0;
 let pinSprite = null;
 let yPath = cyclicIteration([0, 1, 2, 3, 4])
 
-let pinTimer = setInterval(updateGame, 500);
+let attempts = 4;
+
+let pinTimer = setInterval(pinDown, 500);
 let minigameTimer = setInterval(runTimer, 1000);
 setMap(levels[level]);
 
@@ -144,14 +142,25 @@ onInput("d", () => {
   });
   if (victory) {
     getFirst("p").type = "o";
-    //clearInterval(pinTimer);
-    //clearInterval(minigameTimer);
-    //splashText("victory!");
     victory = false;
     yPath = cyclicIteration([0, 1, 2, 3, 4])
     pinsFinished++;
+    if (pinsFinished == 2) { // When we finish more pins, the rest go faster
+      clearInterval(pinTimer);
+      pinTimer = setInterval(pinDown, 300);
+    } else if (pinsFinished >= 3) {
+      clearInterval(pinTimer);
+      pinTimer = setInterval(pinDown, 250);
+    }
   } else {
-    splashText("oof try again");
+    attempts--;
+    splashText(`Nope. ${attempts}/4 trys left`);
+  }
+  if (attempts <= 0) {
+    clearInterval(pinTimer);
+    clearInterval(minigameTimer);
+    clearText();
+    addText("You lost!", {color: color`2`});
   }
 });
 
@@ -229,10 +238,6 @@ function splashText(text, time = 3000) {
   }, time); //Clear splash text and put other text back
 }
 
-// Most player physics is here
-afterInput(() => {
-});
-
 function runTimer() {
   timerText = addText(`Pick lock in ${timer} secs`, { x: 0, y: 0, color: color`2`});
   if (timer <= 0) {
@@ -240,9 +245,4 @@ function runTimer() {
     addText("You lost!", {color: color`2`});
   }
   timer--;
-}
-
-/* move pins every 0.5 sec */
-function updateGame() {
-  pinDown(); //pinSelection
-}      
+}     
