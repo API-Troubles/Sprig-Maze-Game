@@ -36,7 +36,23 @@ const doorLockedHorz = "x";
 
 const key = "k";
 const objective = "m";
-const hammer = "u";
+
+// Minigame stuff
+// WIP!
+const lockPin = "r";
+const lockPinDone = "e";
+const goalLine = "t";
+
+let lockTimer = 15;
+let stopPin = false;
+let pinSelection = null;
+
+let pinsFinished = 0;
+
+let pinSprite = null;
+let yPath = cyclicIteration([0, 1, 2, 3, 4])
+
+let attempts = 4;
 
 setLegend(
   [player, bitmap`
@@ -311,23 +327,58 @@ LLLLLLL6LLLLLLLL
 .......99.......
 ................
 ................`],
-  [hammer, bitmap`
+  
+  [lockPin, bitmap`
+......0000......
+......0000......
+......0000......
+......0000......
+......0000......
+......0000......
+......0000......
+......0000......
+......0000......
+......0000......
+......0000......
+......0000......
+......0000......
+......0000......
+......0000......
+................`],
+  [lockPinDone, bitmap`
+......DDDD......
+......DDDD......
+......DDDD......
+......DDDD......
+......DDDD......
+......DDDD......
+......DDDD......
+......DDDD......
+......DDDD......
+......DDDD......
+......DDDD......
+......DDDD......
+......DDDD......
+......DDDD......
+......DDDD......
+................`],
+  [goalLine, bitmap`
 ................
-.....111........
-.....1111.......
-......1111......
-.......1111.....
-........1111....
-........C1111...
-.......CCC1111..
-......CCC..111..
-.....CCC....11..
-....CCC......1..
-...CCC..........
-..CCC...........
-.CCC............
-CCC.............
-.C..............`]
+................
+................
+................
+................
+................
+6666666666666666
+6666666666666666
+6666666666666666
+6666666666666666
+................
+................
+................
+................
+................
+................`]
 )
 
 // Setup levels and different misc. screens here
@@ -366,15 +417,15 @@ wwwwwxxw..w..
 .......w..h..
 llwwwwww..h..`,
   map`
-p.w....w.....
-..w....w....k
-..w....w.....
-..wwswwwwcwww
-..h..........
-g.h..........
-xxwwcwwwwswww
-..w....w.....
-llw....w.....`,
+p.w...w...w..
+..w...w...w..
+..www.wwwswww
+...j...h.....
+...j...h.....
+wwwwwxwwwvwww
+.......w.....
+.......w...k.
+llwwwwww.....`,
   map`
 p.w...w...w..
 ..w...w...w..
@@ -532,7 +583,13 @@ ww...........
 .d...........
 .............
 .............
-.............`
+.............`,
+  lockGame: map`
+r.r.r.rw
+.......w
+tttttttw
+.......w
+.......w`,
 }
 
 const music = {
@@ -725,6 +782,70 @@ onInput("l", () => {
   }
 });
 
+function startLockGame() {
+  clearInterval(game);
+  var pinTimer = setInterval(pinDown, 500);
+  var minigameTimer = setInterval(runTimer, 1000);
+  setMap(misc.lockGame);
+}
+
+// Keybinds for the lockpick minigame
+let victory = false;
+onInput("i", () => {
+  getTile(getFirst("r").x, getFirst("r").y).forEach(sprites => {
+    if (sprites.type == "t") {
+      victory = true;
+    }
+  });
+  if (victory) {
+    getFirst("r").type = "e";
+    victory = false;
+    yPath = cyclicIteration([0, 1, 2, 3, 4])
+    pinsFinished++;
+    if (pinsFinished == 2) { // When we finish more pins, the rest go faster
+      clearInterval(pinTimer);
+      pinTimer = setInterval(pinDown, 300);
+    } else if (pinsFinished >= 3) {
+      clearInterval(pinTimer);
+      pinTimer = setInterval(pinDown, 250);
+    }
+  } else {
+    attempts--;
+    splashText(`Nope. ${attempts}/4 trys left`);
+  }
+  if (attempts <= 0) {
+    clearInterval(pinTimer);
+    clearInterval(minigameTimer);
+    clearText();
+    addText("You lost!", {color: color`2`});
+  }
+});
+
+function runTimer() {
+  timerText = addText(`Pick lock in ${timer} secs`, { x: 0, y: 0, color: color`2`});
+  if (timer <= 0) {
+    clearText();
+    addText("You lost!", {color: color`2`});
+  }
+  timer--;
+}
+
+function pinDown() {
+  try {
+    pinSprite = getFirst("r");
+    if (pinSprite != null) {
+      pinSprite.y = yPath.next().value;
+    } else if (pinsFinished == 3) {
+    clearInterval(pinTimer);
+    clearInterval(minigameTimer);
+    splashText("victory!");
+    victory = false;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 
 // Add text to screen and remove it, for quick messages
 function splashText(text, time = 3000) {
@@ -871,16 +992,16 @@ function runGuard() {
     guardSprite.y = coords.value[1];
 
     if (coords.direction == "left") {
+      guardSprite.type = "f";
       try {
-        guardSprite.type = "f";
-        getFirst("g").remove()
+        getFirst("g").remove() // BUGFIX: This fixed the duplicating guard glitch
       } catch (error) {
         console.log(error);
       }
     } else if (coords.direction == "right") {
+      guardSprite.type = "g";
       try {
-        guardSprite.type = "g";
-        getFirst("f").remove()
+        getFirst("f").remove() // BUGFIX: This fixed the duplicating guard glitch
       } catch (error) {
         console.log(error);
       }
@@ -920,6 +1041,7 @@ afterInput(() => {
 
     getFirst("k").remove();
     splashText("Doors open!", 1000);
+    startLockGame();
   }
 
   // If touch checkpoint promote next level!
