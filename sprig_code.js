@@ -813,7 +813,7 @@ onInput("i", () => {
     }
   } else {
     attempts--;
-    splashText(`${attempts}/4 trys left!`);
+    splashText(`${attempts}/4 trys left!`, 3000, false);
   }
   if (attempts <= 0) {
     clearInterval(pinTimer);
@@ -827,6 +827,7 @@ onInput("i", () => {
 
 let playerPos = null;
 function startLockGame() {
+  clearText();
   playerPos = getPlayer();
   attempts = 4;      // Reset the attempts
   pinsFinished = 0;  // & progress of minigame
@@ -838,14 +839,14 @@ function startLockGame() {
   setMap(misc.lockGame);
 }
 
-
+minigameTimerCount = 15;
 function runTimer() {
-  timerText = addText(`Pick lock in ${timer} secs`, { x: 0, y: 0, color: color`2`});
+  addText(`Pick lock in ${minigameTimerCount} secs`, { x: 0, y: 0, color: color`2`});
   if (timer <= 0) {
     setCaught();
     minigame = false;
   }
-  timer--;
+  minigameTimerCount--;
 }
 
 function pinDown() {
@@ -860,8 +861,9 @@ function pinDown() {
       guardAI = setInterval(runGuard, 1000);
       splashText("Unlocked vault!");
       setMap(levels[level]);
-      getPlayer().x = playerPos.x
-      getPlayer().y = playerPos.y
+      getPlayer().x = playerPos.x;
+      getPlayer().y = playerPos.y;
+      getPlayer().type = playerPos.type;
       victory = false;
       minigame = false; // <= Allow player movement and loops to continue
     }
@@ -872,14 +874,16 @@ function pinDown() {
 
 
 // Add text to screen and remove it, for quick messages
-function splashText(text, time = 3000) {
+function splashText(text, time = 3000, addTextBack = true) {
   let options = {y: 15, color: color`6` };
   addText(text, options=options);
   setTimeout( function() {
     clearText();
-    timerText = addText(`Escape in ${timer} secs`, { x: 1, y: 0, color: color`2`});
-    if (screenText[level] != null) {
-      screenText[level].forEach((text) => addText(text[0], options=text[1]));
+    if (addTextBack) {
+      timerText = addText(`Escape in ${timer} secs`, { x: 1, y: 0, color: color`2`});
+      if (screenText[level] != null) {
+        screenText[level].forEach((text) => addText(text[0], options=text[1]));
+      }
     }
   }, time); //Clear splash text and put other text back
 }
