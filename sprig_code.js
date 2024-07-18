@@ -427,12 +427,12 @@ llwwwwww..h..`,
   map`
 p.w...w...w..
 ..w...w...w..
-..www.wwwswww
+.kwww.wwwswww
 ...j...h.....
 ...j...h.....
 wwwwwxwwwvwww
 .......w.....
-.......w...k.
+.......w.....
 llwwwwww.....`,
   map`
 p.w...w...w..
@@ -820,12 +820,19 @@ onInput("i", () => {
     clearInterval(minigameTimer);
     clearText();
     addText("You lost!", {color: color`2`});
+    setCaught();
+    minigame = false;
   }
 });
 
+let playerPos = null;
 function startLockGame() {
+  playerPos = getPlayer();
+  attempts = 4;      // Reset the attempts
+  pinsFinished = 0;  // & progress of minigame
   minigame = true;
-  clearInterval(updateGame);
+  clearInterval(game);
+  clearInterval(guardAI);
   pinTimer = setInterval(pinDown, 500);
   minigameTimer = setInterval(runTimer, 1000);
   setMap(misc.lockGame);
@@ -835,8 +842,8 @@ function startLockGame() {
 function runTimer() {
   timerText = addText(`Pick lock in ${timer} secs`, { x: 0, y: 0, color: color`2`});
   if (timer <= 0) {
-    clearText();
-    addText("You lost!", {color: color`2`});
+    setCaught();
+    minigame = false;
   }
   timer--;
 }
@@ -846,11 +853,17 @@ function pinDown() {
     pinSprite = getFirst("r");
     if (pinSprite != null) {
       pinSprite.y = yPath.next().value;
-    } else if (pinsFinished == 3) {
-    clearInterval(pinTimer);
-    clearInterval(minigameTimer);
-    splashText("victory!");
-    victory = false;
+    } else if (pinsFinished == 4) { // <= This determines if we win da minigame
+      clearInterval(pinTimer);
+      clearInterval(minigameTimer);
+      game = setInterval(updateGame, 1000);
+      guardAI = setInterval(runGuard, 1000);
+      splashText("Unlocked vault!");
+      setMap(levels[level]);
+      getPlayer().x = playerPos.x
+      getPlayer().y = playerPos.y
+      victory = false;
+      minigame = false; // <= Allow player movement and loops to continue
     }
   } catch (error) {
     console.log(error);
@@ -890,7 +903,7 @@ function getPlayer() {
     throw new Error('No player sprite');
   }
   console.log(`Player Coords: (${playerModel.x}, ${playerModel.y})`)
-  return {x: playerModel.x, y: playerModel.y};
+  return playerModel;
 }
 
 function getGuard() {
@@ -981,8 +994,8 @@ function nextLevel() {
     playback.end();
     playTune(music.victory);
     setMap(misc.victory);
-    clearInterval(updateGame);
-    clearInterval(runGuard);
+    clearInterval(game);
+    clearInterval(guardAI);
   }
 }
 
@@ -1034,42 +1047,42 @@ function runGuard() {
 
 // Most player physics is here
 afterInput(() => {
-  if (minigame) {
-    return null;
-  }
-  playerSprite = getPlayer();
-  block = getTile(playerSprite.x, playerSprite.y);
-  // If touch active laser then player die 
-  if (blockHas(block, "h") || blockHas(block, "v")) {
-    setCaught()
-  }
+  if (!minigame) {
+    playerSprite = getPlayer();
+    block = getTile(playerSprite.x, playerSprite.y);
+    
+    // If touch active laser then player die 
+    if (blockHas(block, "h") || blockHas(block, "v")) {
+      setCaught();
+    }
   
-  // If touch key then open all door
-  if (blockHas(block, "k")) {
-    getAll("x").forEach((door) => door.remove());
-    getAll("z").forEach((door) => door.remove());
+    // If touch key then open all door
+    if (blockHas(block, "k")) {
+      getAll("x").forEach((door) => door.remove());
+      getAll("z").forEach((door) => door.remove());
 
-    getFirst("k").remove();
-    splashText("Doors open!", 1000);
-    startLockGame();
-  }
+      getFirst("k").remove();
+      splashText("Doors open!", 1000);
+      startLockGame();
+    }
 
-  // If touch checkpoint promote next level!
-  if (blockHas(block, "l")) {
+    // If touch checkpoint promote next level!
+    if (blockHas(block, "l")) {
       nextLevel();
-  }
+    }
 
-  // If in 3x3 range of guard, caught!
-  let guard = getGuard();
-  if (guard != null) {
-    for (let x = guard.x - 1; x <= guard.x + 1; x++) {
-      for (let y = guard.y - 1; y <= guard.y + 1; y++) {
-        const sprites = getTile(x, y);
+    // If in 3x3 range of guard, caught!
+    let guard = getGuard();
+    if (guard != null) {
+      for (let x = guard.x - 1; x <= guard.x + 1; x++) {
+        for (let y = guard.y - 1; y <= guard.y + 1; y++) {
+          const sprites = getTile(x, y);
 
-        // Can't use the func I built D:
-        for (let sprite of sprites) {
-          if (sprite.type == "p" || sprite.type == "o") {
-            setCaught();
+          // Can't use the func I built D:
+          for (let sprite of sprites) {
+            if (sprite.type == "p" || sprite.type == "o") {
+              setCaught();
+            }
           }
         }
       }
@@ -1103,6 +1116,7 @@ function updateGame() {
   });
 
   playerSprite = getPlayer();
+  console.log("update game!");
   block = getTile(playerSprite.x, playerSprite.y);
 
   //  Check if lasers touching player every sec
