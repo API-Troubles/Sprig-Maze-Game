@@ -1,9 +1,4 @@
 /*
-Find the test code here!
-https://sprig.hackclub.com/share/rrr8zIwj5bAAxlt5Sk5u
-
-Note; Only works down fornow
-
 First time? Check out the tutorial game:
 https://sprig.hackclub.com/gallery/getting_started
 
@@ -182,11 +177,13 @@ setPushables({
 })
 
 onInput("w", () => {
+  const savedPlayerSprite = getFirst(player);
   getFirst(player).y -= 1
-  console.log(getFirst(player).y)
   if (getFirst(player).y == 0) {
     try {
       setMap(levels[levelY - 1][levelX]);
+      getFirst(player).x = savedPlayerSprite.x;
+      getFirst(player).y = height() - 1;      
       levelY -= 1;
     } catch (error) {
       console.log(`Attempted to move up:\n${levelY} ${levelX}`)
@@ -195,16 +192,28 @@ onInput("w", () => {
 })
 
 onInput("a", () => {
+  const savedPlayerSprite = getFirst(player);
   getFirst(player).x -= 1
+  if (getFirst(player).x == 0) {
+    try {
+      setMap(levels[levelY][levelX - 1]);
+      getFirst(player).x = width() - 1;
+      getFirst(player).y = savedPlayerSprite.y;
+      levelX -= 1;
+    } catch (error) {
+      console.log(`Attempted to move left:\n${levelY} ${levelX}`)
+    }
+  }  
 })
 
 onInput("s", () => {
+  const savedPlayerSprite = getFirst(player);
   getFirst(player).y += 1
-  console.log(getFirst(player).y)
-  console.log(width() - 1)
   if (getFirst(player).y == height() - 1) {
     try {
       setMap(levels[levelY + 1][levelX]);
+      getFirst(player).x = savedPlayerSprite.x;
+      getFirst(player).y = 0;
       levelY += 1;
     } catch (error) {
       console.log(`Attempted to move down:\n${levelY} ${levelX}`)
@@ -213,18 +222,19 @@ onInput("s", () => {
 })
 
 onInput("d", () => {
+  const savedPlayerSprite = getFirst(player);
   getFirst(player).x += 1
+  if (getFirst(player).x == width() - 1) {
+    try {
+      setMap(levels[levelY][levelX + 1]);
+      getFirst(player).x = 0;
+      getFirst(player).y = savedPlayerSprite.y;
+      levelX += 1;
+    } catch (error) {
+      console.log(`Attempted to move right:\n${levelY} ${levelX}`)
+    }
+  }  
 })
-
-
-function changeMap(X, Y) {
-  //Ensure we're not going off the map
-  playerSprite = getFirst(player);
-  if (Y <= levels.length && Y >= 0) {
-    levelY = Y
-    setMap(levels[levelY][X]);
-  }
-}
 
 afterInput(() => {
   
