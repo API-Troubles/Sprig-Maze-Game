@@ -36,7 +36,29 @@ const doorLockedHorz = "x";
 
 const key = "k";
 const objective = "m";
-const hammer = "u";
+
+let vault = "y"
+
+// Minigame stuff
+// WIP!
+const lockPin = "r";
+const lockPinDone = "e";
+const goalLine = "t";
+
+let lockTimer = 15;
+let stopPin = false;
+
+let pinSelection = null;
+let pinsFinished = 0;
+
+let pinSprite = null;
+let yPath = cyclicIteration([0, 1, 2, 3, 4]);
+
+let attempts = 4;
+
+let pinTimer = null;
+let minigameTimer = null;
+
 
 setLegend(
   [player, bitmap`
@@ -107,6 +129,7 @@ setLegend(
 ..333333333333..
 ................
 ................`],
+  
   [wall, bitmap`
 0000000000000000
 0000000000000000
@@ -124,6 +147,7 @@ setLegend(
 0000000000000000
 0000000000000000
 0000000000000000`],
+  
   [laserVert, bitmap`
 ................
 ................
@@ -192,6 +216,7 @@ L..............L
 ................
 .......111......
 ......LLLLL.....`],
+  
   [levelUp, bitmap`
 ................
 .DDD..DDDD..DDD.
@@ -209,6 +234,7 @@ L..............L
 .D............D.
 .DDD..DDDD..DDD.
 ................`],
+  
   [door, bitmap`
 ....LLLLLLL.....
 ....L11111L.....
@@ -277,6 +303,7 @@ LLLLLLL6LLLLLLLL
 ................
 ................
 ................`],
+  
   [key, bitmap`
 ................
 ................
@@ -311,23 +338,75 @@ LLLLLLL6LLLLLLLL
 .......99.......
 ................
 ................`],
-  [hammer, bitmap`
+  
+  [lockPin, bitmap`
+......0000......
+......0000......
+......0000......
+......0000......
+......0000......
+......0000......
+......0000......
+......0000......
+......0000......
+......0000......
+......0000......
+......0000......
+......0000......
+......0000......
+......0000......
+................`],
+  [lockPinDone, bitmap`
+......DDDD......
+......DDDD......
+......DDDD......
+......DDDD......
+......DDDD......
+......DDDD......
+......DDDD......
+......DDDD......
+......DDDD......
+......DDDD......
+......DDDD......
+......DDDD......
+......DDDD......
+......DDDD......
+......DDDD......
+................`],
+  [goalLine, bitmap`
 ................
-.....111........
-.....1111.......
-......1111......
-.......1111.....
-........1111....
-........C1111...
-.......CCC1111..
-......CCC..111..
-.....CCC....11..
-....CCC......1..
-...CCC..........
-..CCC...........
-.CCC............
-CCC.............
-.C..............`]
+................
+................
+................
+................
+................
+6666666666666666
+6666666666666666
+6666666666666666
+6666666666666666
+................
+................
+................
+................
+................
+................`],
+  [vault, bitmap`
+................
+.LLLLLLLLLLLLLL.
+.L111111111111L.
+.L111111111111L.
+.L111111111111L.
+.L111111111111L.
+.L111L11111111L.
+.L11LLL1111111L.
+.L1LL0LL111111L.
+.L11LLL1111111L.
+.L111L11111111L.
+.L111111111111L.
+.L111111111111L.
+.L111111111111L.
+.LLLLLLLLLLLLLL.
+................`]
 )
 
 // Setup levels and different misc. screens here
@@ -366,15 +445,15 @@ wwwwwxxw..w..
 .......w..h..
 llwwwwww..h..`,
   map`
-p.w....w.....
-..w....w....k
-..w....w.....
-..wwswwwwcwww
-..h..........
-g.h..........
-xxwwcwwwwswww
-..w....w.....
-llw....w.....`,
+p.w...w...w..
+..w...w...w..
+.kwww.wwwswww
+...j...h.....
+...j...h.....
+wwwwwxwwwvwww
+.......w.....
+.......w.....
+llwwwwww.....`,
   map`
 p.w...w...w..
 ..w...w...w..
@@ -441,18 +520,7 @@ const guardPath = [
     [5,4],
     [4,4]
   ], 
-  [
-    [0,5],
-    [1,5],
-    [2,5],
-    [3,5],
-    [4,5],
-    [5,5],
-    [6,5],
-    [7,5],
-    [8,5],
-    [9,5]
-  ],
+  null,
   null,
   [
     [4, 7],
@@ -532,7 +600,13 @@ ww...........
 .d...........
 .............
 .............
-.............`
+.............`,
+  lockGame: map`
+r.r.r.rw
+.......w
+tttttttw
+.......w
+.......w`,
 }
 
 const music = {
@@ -581,11 +655,22 @@ const music = {
 410.958904109589: C5-410.958904109589 + C4^410.958904109589,
 410.958904109589,
 410.958904109589: C4-410.958904109589 + C5^410.958904109589,
-10684.931506849314`
+10684.931506849314`,
+
+  correct: tune`
+500: F5-500 + C5-500 + G4/500,
+500: G5-500 + C5-500 + G4/500,
+15000`,
+  missed: tune`
+500: D5/500 + G4-500,
+500: G4/500 + D4-500,
+15000`
 }
 
+let minigame = false;
 let tutorial = true;
 let restart = false;
+
 let game = null;
 let guardAI = null;
 let iterator = null;
@@ -651,12 +736,12 @@ function tutorialAnimation() {
     tutorialFlag = 1;
   }
 }
-// End tutorial!
+// END TUTORIAL!
 
 
 // inputs for player movement control
 onInput("w", () => {
-  if (!tutorial) {
+  if (!tutorial && !minigame) {
     try {
       getFirst(player).y -= 1;
     } catch (error) {
@@ -666,7 +751,7 @@ onInput("w", () => {
 });
 
 onInput("a", () => {
-  if (!tutorial) {
+  if (!tutorial && !minigame) {
     try {
       getFirst(player).x -= 1;
       getFirst("p").type = "o";
@@ -677,7 +762,7 @@ onInput("a", () => {
 });
 
 onInput("s", () => {
-  if (!tutorial) {
+  if (!tutorial && !minigame) {
     try {
       getFirst(player).y += 1;
     } catch (error) {
@@ -687,7 +772,7 @@ onInput("s", () => {
 });
 
 onInput("d", () => {
-  if (!tutorial) {
+  if (!tutorial && !minigame) {
     try {
       getFirst(player2).x += 1;
       getFirst("o").type = "p";
@@ -725,16 +810,100 @@ onInput("l", () => {
   }
 });
 
+// Keybinds for the lockpick minigame
+// inputs for player movement control
+let victory = false;
+onInput("i", () => {
+  getTile(getFirst("r").x, getFirst("r").y).forEach(sprites => {
+    if (sprites.type == "t") {
+      victory = true;
+    }
+  });
+  if (victory) {
+    getFirst("r").type = "e";
+    victory = false;
+    yPath = cyclicIteration([0, 1, 2, 3, 4])
+    pinsFinished++;
+    if (pinsFinished == 2) { // When we finish more pins, the rest go faster
+      clearInterval(pinTimer);
+      pinTimer = setInterval(pinDown, 300);
+    } else if (pinsFinished >= 3) {
+      clearInterval(pinTimer);
+      pinTimer = setInterval(pinDown, 250);
+    }
+  } else {
+    attempts--;
+    splashText(`${attempts}/4 trys left!`, 3000, false);
+  }
+  if (attempts <= 0) {
+    clearInterval(pinTimer);
+    clearInterval(minigameTimer);
+    clearText();
+    addText("You lost!", {color: color`2`});
+    setCaught();
+    minigame = false;
+  }
+});
+
+let playerPos = null;
+function startLockGame() {
+  clearText();
+  playerPos = getPlayer();
+  attempts = 4;      // Reset the attempts
+  pinsFinished = 0;  // & progress of minigame
+  minigame = true;
+  clearInterval(game);
+  clearInterval(guardAI);
+  pinTimer = setInterval(pinDown, 500);
+  minigameTimer = setInterval(runTimer, 1000);
+  setMap(misc.lockGame);
+}
+
+minigameTimerCount = 15;
+function runTimer() {
+  addText(`Pick lock in ${minigameTimerCount} secs`, { x: 0, y: 0, color: color`2`});
+  if (timer <= 0) {
+    setCaught();
+    minigame = false;
+  }
+  minigameTimerCount--;
+}
+
+function pinDown() {
+  try {
+    pinSprite = getFirst("r");
+    if (pinSprite != null) {
+      pinSprite.y = yPath.next().value;
+    } else if (pinsFinished == 4) { // <= This determines if we win da minigame
+      clearInterval(pinTimer);
+      clearInterval(minigameTimer);
+      game = setInterval(updateGame, 1000);
+      guardAI = setInterval(runGuard, 1000);
+      splashText("Unlocked vault!");
+      setMap(levels[level]);
+      getPlayer().x = playerPos.x;
+      getPlayer().y = playerPos.y;
+      getPlayer().type = playerPos.type;
+      victory = false;
+      minigame = false; // <= Allow player movement and loops to continue
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 
 // Add text to screen and remove it, for quick messages
-function splashText(text, time = 3000) {
+function splashText(text, time = 3000, addTextBack = true) {
   let options = {y: 15, color: color`6` };
   addText(text, options=options);
   setTimeout( function() {
     clearText();
-    timerText = addText(`Escape in ${timer} secs`, { x: 1, y: 0, color: color`2`});
-    if (screenText[level] != null) {
-      screenText[level].forEach((text) => addText(text[0], options=text[1]));
+    if (addTextBack) {
+      timerText = addText(`Escape in ${timer} secs`, { x: 1, y: 0, color: color`2`});
+      if (screenText[level] != null) {
+        screenText[level].forEach((text) => addText(text[0], options=text[1]));
+      }
     }
   }, time); //Clear splash text and put other text back
 }
@@ -758,7 +927,7 @@ function getPlayer() {
     throw new Error('No player sprite');
   }
   console.log(`Player Coords: (${playerModel.x}, ${playerModel.y})`)
-  return {x: playerModel.x, y: playerModel.y};
+  return playerModel;
 }
 
 function getGuard() {
@@ -789,7 +958,7 @@ function cyclicIteration(array) {
     next: function() {
       if (index === array.length - 1) {
         direction = -1;
-      } else if (index === 0) {
+      } else if (index == 0) {
         direction = 1;
       }
 
@@ -804,17 +973,13 @@ function cyclicIteration(array) {
       let difference = lastMove[0] - currentValue[0];
       if (difference >= 1) { // If the x is increasing / moving left <<<
         directionStr = "left";
-        
       } else if (difference <= -1) { // If the x is decreasing / moving right >>>
         directionStr = "right";
-
       } else { // else then not moving left or right
         directionStr = "up/down"
       }
 
       lastMove = currentValue;
-      //console.log("lets final check!")
-      //console.log({value: currentValue, direction: directionStr});
       return {value: currentValue, direction: directionStr};
     }
   };
@@ -853,8 +1018,8 @@ function nextLevel() {
     playback.end();
     playTune(music.victory);
     setMap(misc.victory);
-    clearInterval(updateGame);
-    clearInterval(runGuard);
+    clearInterval(game);
+    clearInterval(guardAI);
   }
 }
 
@@ -871,16 +1036,16 @@ function runGuard() {
     guardSprite.y = coords.value[1];
 
     if (coords.direction == "left") {
+      guardSprite.type = "f";
       try {
-        guardSprite.type = "f";
-        getFirst("g").remove()
+        getFirst("g").remove() // BUGFIX: This fixed the duplicating guard glitch
       } catch (error) {
         console.log(error);
       }
     } else if (coords.direction == "right") {
+      guardSprite.type = "g";
       try {
-        guardSprite.type = "g";
-        getFirst("f").remove()
+        getFirst("f").remove() // BUGFIX: This fixed the duplicating guard glitch
       } catch (error) {
         console.log(error);
       }
@@ -906,38 +1071,42 @@ function runGuard() {
 
 // Most player physics is here
 afterInput(() => {
-  playerSprite = getPlayer();
-  block = getTile(playerSprite.x, playerSprite.y);
-  // If touch active laser then player die 
-  if (blockHas(block, "h") || blockHas(block, "v")) {
-    setCaught()
-  }
+  if (!minigame) {
+    playerSprite = getPlayer();
+    block = getTile(playerSprite.x, playerSprite.y);
+    
+    // If touch active laser then player die 
+    if (blockHas(block, "h") || blockHas(block, "v")) {
+      setCaught();
+    }
   
-  // If touch key then open all door
-  if (blockHas(block, "k")) {
-    getAll("x").forEach((door) => door.remove());
-    getAll("z").forEach((door) => door.remove());
+    // If touch key then open all door
+    if (blockHas(block, "k")) {
+      getAll("x").forEach((door) => door.remove());
+      getAll("z").forEach((door) => door.remove());
 
-    getFirst("k").remove();
-    splashText("Doors open!", 1000);
-  }
+      getFirst("k").remove();
+      splashText("Doors open!", 1000);
+      //startLockGame();
+    }
 
-  // If touch checkpoint promote next level!
-  if (blockHas(block, "l")) {
+    // If touch checkpoint promote next level!
+    if (blockHas(block, "l")) {
       nextLevel();
-  }
+    }
 
-  // If in 3x3 range of guard, caught!
-  let guard = getGuard();
-  if (guard != null) {
-    for (let x = guard.x - 1; x <= guard.x + 1; x++) {
-      for (let y = guard.y - 1; y <= guard.y + 1; y++) {
-        const sprites = getTile(x, y);
+    // If in 3x3 range of guard, caught!
+    let guard = getGuard();
+    if (guard != null) {
+      for (let x = guard.x - 1; x <= guard.x + 1; x++) {
+        for (let y = guard.y - 1; y <= guard.y + 1; y++) {
+          const sprites = getTile(x, y);
 
-        // Can't use the func I built D:
-        for (let sprite of sprites) {
-          if (sprite.type == "p" || sprite.type == "o") {
-            setCaught();
+          // Can't use the func I built D:
+          for (let sprite of sprites) {
+            if (sprite.type == "p" || sprite.type == "o") {
+              setCaught();
+            }
           }
         }
       }
@@ -971,6 +1140,7 @@ function updateGame() {
   });
 
   playerSprite = getPlayer();
+  console.log("update game!");
   block = getTile(playerSprite.x, playerSprite.y);
 
   //  Check if lasers touching player every sec
