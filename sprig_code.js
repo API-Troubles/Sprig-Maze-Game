@@ -341,7 +341,7 @@ w...........w
 w...........w
 w..........lw
 w..........lw
-wwwswwwswwwsw
+www.wwwswwwsw
 w...w...w...w
 w..pw...w...w
 w...w...w...w`,
@@ -360,7 +360,7 @@ w...w...w....`,
 .......w..w..
 wwwwww.wssw..
 ..........w..
-p.......g.wvv
+p.......g.wcc
 wwwwwxxw..w..
 .......w..w..
 .......w..h..
@@ -369,18 +369,18 @@ llwwwwww..h..`,
 p.w....w.....
 ..w....w....k
 ..w....w.....
-..wwxwwwwvwww
+..wwswwwwcwww
 ..h..........
 g.h..........
-vvwwvwwwwswww
+xxwwcwwwwswww
 ..w....w.....
 llw....w.....`,
   map`
 p.w...w...w..
 ..w...w...w..
 ..www.wwwswww
-...h...h.....
-...h...h.....
+...j...h.....
+...j...h.....
 wwwwwxwwwvwww
 .......w.....
 .......w...k.
@@ -718,19 +718,26 @@ onInput("l", () => {
     setMap(levels[0]);
     clearText()
     game = setInterval(updateGame, 1000);
-    guardAI = setInterval(runGuard, 2000);
+    guardAI = setInterval(runGuard, 1000);
     iterator = cyclicIteration(guardPath[level]);
     playback = playTune(music.background, Infinity);
     restart = false;
   }
 });
 
-function splashText(text, time = 3000) {
-  let test = width();
-  addText(test, options={ x: 5, y: 15, color: color`6` })
-}
 
-splashText("test yellow hello");
+// Add text to screen and remove it, for quick messages
+function splashText(text, time = 3000) {
+  let options = {y: 15, color: color`6` };
+  addText(text, options=options);
+  setTimeout( function() {
+    clearText();
+    timerText = addText(`Escape in ${timer} secs`, { x: 1, y: 0, color: color`2`});
+    if (screenText[level] != null) {
+      screenText[level].forEach((text) => addText(text[0], options=text[1]));
+    }
+  }, time); //Clear splash text and put other text back
+}
 
 function blockHas(block, item) {
   for (let sprite of block) {
@@ -860,7 +867,6 @@ function runGuard() {
     const coords = iterator.next();
     const guardSprite = getGuard();
 
-    console.log(guardSprite);
     guardSprite.x = coords.value[0];
     guardSprite.y = coords.value[1];
 
@@ -909,17 +915,11 @@ afterInput(() => {
   
   // If touch key then open all door
   if (blockHas(block, "k")) {
-    try {
-      getAll("x").forEach((door) => door.remove());
-    } catch (error) {
-      console.log(error);
-    }
-    try {
-      getAll("x").forEach((door) => door.remove());
-    } catch (error) {
-      console.log(error);
-    }
+    getAll("x").forEach((door) => door.remove());
+    getAll("z").forEach((door) => door.remove());
+
     getFirst("k").remove();
+    splashText("Doors open!", 1000);
   }
 
   // If touch checkpoint promote next level!
@@ -946,35 +946,29 @@ afterInput(() => {
 });
 
 /* Enable and disable all lasers every 1 sec, run timer */
-/* CREDIT TIMER: Thanks to https://sprig.hackclub.com/~/pIrXiIjFINorvL2bCYM9! */
 var laserOn = false;
 function updateGame() {
+  // Timer!
+  /* CREDIT TIMER: Thanks to https://sprig.hackclub.com/~/pIrXiIjFINorvL2bCYM9! */
   timerText = addText(`Escape in ${timer} secs`, { x: 1, y: 0, color: color`2`});
-  if (laserOn) {
-    try { // Convert all horizontal off lasers to on
-      getAll("j").forEach(sprite => sprite.type = "h");
-    } catch (error) {
-      console.log(error);
+  
+  let laserSprites = [];
+  laserSprites.push.apply(laserSprites, getAll("j"));
+  laserSprites.push.apply(laserSprites, getAll("c"));
+  laserSprites.push.apply(laserSprites, getAll("h"));
+  laserSprites.push.apply(laserSprites, getAll("v"));
+
+  laserSprites.forEach((laser) => {
+    if (laser.type == "j") {
+      laser.type = "h";
+    } else if (laser.type == "c") {
+      laser.type = "v";
+    } else if (laser.type == "h") {
+      laser.type = "j";
+    } else if (laser.type == "v") {
+      laser.type = "c";
     }
-    try { // Convert all vertical off lasers to on
-      getAll("c").forEach(sprite => sprite.type = "v");
-    } catch (error) {
-      console.log(error);
-    }
-    laserOn = false;
-  } else {
-    try { // Convert all horizontal on lasers to off
-      getAll("h").forEach(sprite => sprite.type = "j");
-    } catch (error) {
-      console.log(error);
-    }
-    try { // Convert all vertical on lasers to off
-      getAll("v").forEach(sprite => sprite.type = "c");
-    } catch (error) {
-      console.log(error);
-    }
-    laserOn = true;
-  }
+  });
 
   playerSprite = getPlayer();
   block = getTile(playerSprite.x, playerSprite.y);
@@ -990,4 +984,4 @@ function updateGame() {
   }
   
   timer--;
-}          
+}      
