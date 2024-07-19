@@ -35,7 +35,7 @@ const doorLocked = "z";
 const doorLockedHorz = "x";
 
 const key = "k";
-const objective = "m";
+const masterKey = "m";
 
 let vault = "y"
 
@@ -59,6 +59,12 @@ let attempts = 4;
 let pinTimer = null;
 let minigameTimer = null;
 
+// The 3 things the player needs to do to escape
+let playerStats = {
+  unlockMainHall: false,
+  lockpickMinigameDone: false,
+  getMainKey: false
+};
 
 setLegend(
   [player, bitmap`
@@ -321,21 +327,21 @@ LLLLLLL6LLLLLLLL
 ................
 ................
 ................`],
-  [objective, bitmap`
+  [masterKey, bitmap`
 ................
-.......99.......
-.......99.......
-.......99.......
-.......99.......
-.......99.......
-.......99.......
-.......99.......
-.......99.......
-.......99.......
-.......99.......
 ................
-.......99.......
-.......99.......
+................
+................
+......333.......
+.....3...3......
+.....3...3......
+......333.......
+.......3........
+.......33.......
+.......3........
+.......33.......
+................
+................
 ................
 ................`],
   
@@ -411,8 +417,7 @@ LLLLLLL6LLLLLLLL
 
 // Setup levels and different misc. screens here
 // Using 13x9 size for most maps
-// NOTE SELF: Each level should have the player and a checkpoint
-let level = 0
+// NOTE SELF: Each level should have the player
 const levels = [
   [
     map`
@@ -440,7 +445,7 @@ w...w...w....`,
 ..........w.k
 wwwww..wwww..
 ..........w..
-p.........wvv
+p.......f.wvv
 wwwwwxxw..w..
 ....wvvw..h..
 ....d..w..h..
@@ -450,12 +455,12 @@ wwwwwxxw..w..
     map`
 wwwwwwwwww...
 w........w...
-w........w...
+w.....g..w...
 w........wwww
 w........dh..
-w........dh.p
-w........dh..
-w........wwww
+wwwww....dh.p
+w.j.h....dh..
+wyj.h....wwww
 wwwwwwwwww...`,
     map`
 ....wwwwwww..
@@ -463,7 +468,7 @@ wwwwwwwwww...`,
 ....w.....w..
 wwwwwwwcwwwww
 ....h.....h..
-...gh.....h.p
+..g.h.....h.p
 ....h.....h..
 wwwwww...wwww
 .....w...w...`,
@@ -473,7 +478,7 @@ wwwwww...wwww
 ....w..w.....
 wwwwwvvwwwwww
 ....j..j.h.jd
-.g..j..j.h.jd
+....j..jfh.jd
 ....j..j.h.jd
 wwwwwvvwwwwww
 ....w..w.....`
@@ -483,11 +488,11 @@ wwwwwvvwwwwww
 wwwwwwwwww...
 w........wwww
 w........dh..
-w........dh.p
-w........dh..
-w........wwww
-w........w...
-w........w...
+w.....g..dh.p
+wwwww....dh..
+w.j.h....wwww
+wmj.h....w...
+w.j.h....w...
 wwwwwwwwww...`,
     map`
 .....w.p.w...
@@ -515,40 +520,74 @@ wwwwwwwwwwwww
 // Misc settings
 
 const guardPath = [
-  null,
-  null,
   [
-    [8,4],
+    null,
+    null,
+    [
     [7,4],
     [6,4],
     [5,4],
-    [4,4]
-  ], 
-  null,
-  null,
+    [4,4],
+    [3,4]
+  ]
+  ],
   [
-    [4, 7],
-    [5, 7],
-    [6, 7],
-    [7, 7]
+    [
+      [6, 2],
+      [6, 3],
+      [6, 4],
+      [6, 5],
+      [6, 6]
+    ],
+    [
+      [2, 5],
+      [3, 5],
+      [4, 5],
+      [5, 5],
+      [6, 5],
+      [7, 5],
+      [8, 5],
+      [9, 5],
+      [10, 5]
+    ],
+    [
+      [8, 5],
+      [7, 5],
+      [6, 5],
+      [5, 5],
+      [4, 5],
+      [3, 5],
+      [2, 5]
+    ]
+  ],
+  [
+    [
+      [6, 2],
+      [6, 3],
+      [6, 4],
+      [6, 5],
+      [6, 6]
+    ],
+    null,
+    null
   ]
 ]
 
 const screenText = [
   [
-    null, 
     [
       ["Quick! >>>", { x: 4, y: 3, color: color`0`}]
     ], 
-    null
+    [
+      ["Keep going!", { x: 1, y: 3, color: color`0`}]
+    ], 
+    [
+      ["Hide here!", { x: 2, y: 2, color: color`0`}]
+    ]
   ],
   [
-    [
-    ["Guard!", { x: 1, y: 3, color: color`0`}]
-  ], 
-    [
-    ["Here!", { x: 5, y: 2, color: color`0`}]
-  ],
+    null, 
+    null,
     null,
   ],
   [
@@ -686,7 +725,7 @@ let restart = false;
 let game = null;
 let guardAI = null;
 let iterator = null;
-let timer = 600;
+let timer = 300;
 
 let playback = playTune(music.background, Infinity);
 
@@ -753,84 +792,92 @@ function tutorialAnimation() {
 
 // inputs for player movement control
 onInput("w", () => {
-  const savedPlayerSprite = getPlayer();
-  getPlayer().y -= 1
-  if (getPlayer().y == 0) {
-    try {
-      setMap(levels[levelY - 1][levelX]);
-      getPlayer().x = savedPlayerSprite.x;
-      getPlayer().y = height() - 1;      
-      levelY -= 1;
-    } catch (error) {
-      console.log(`Attempted to move up:\n${levelY} ${levelX}`)
+  if (!tutorial && !minigame) {
+    const savedPlayerSprite = getPlayer();
+    getPlayer().y -= 1
+    if (getPlayer().y == 0) {
+      try {
+        setMap(levels[levelY - 1][levelX]);
+        getPlayer().x = savedPlayerSprite.x;
+        getPlayer().y = height() - 1;      
+        levelY -= 1;
+        nextMap();
+      } catch (error) {
+        console.log(`Attempted to move up:\n${levelY} ${levelX}`)
+      }
     }
   }
 });
 
 onInput("a", () => {
-  const savedPlayerSprite = getPlayer();
-  getPlayer().x -= 1;
-  getPlayer().type = "o";
+  if (!tutorial && !minigame) {
+    const savedPlayerSprite = getPlayer();
+    getPlayer().x -= 1;
+    getPlayer().type = "o";
 
-  if (getPlayer().x == 0) {
-    try {
-      setMap(levels[levelY][levelX - 1]);
-      getPlayer().x = width() - 1;
-      getPlayer().y = savedPlayerSprite.y;
-      levelX -= 1;
-    } catch (error) {
-      console.log(`Attempted to move left:\n${levelY} ${levelX}`)
-    }
-  } 
+    if (getPlayer().x == 0) {
+      try {
+        setMap(levels[levelY][levelX - 1]);
+        getPlayer().x = width() - 1;
+        getPlayer().y = savedPlayerSprite.y;
+        levelX -= 1;
+        nextMap();
+      } catch (error) {
+        console.log(`Attempted to move left:\n${levelY} ${levelX}`)
+      }
+    }  
+  }
 });
 
 onInput("s", () => {
-  const savedPlayerSprite = getPlayer();
-  getPlayer().y += 1
-  if (getPlayer().y == height() - 1) {
-    try {
-      setMap(levels[levelY + 1][levelX]);
-      getPlayer().x = savedPlayerSprite.x;
-      getPlayer().y = 0;
-      levelY += 1;
-    } catch (error) {
-      console.log(`Attempted to move down:\n${levelY} ${levelX}`)
+  if (!tutorial && !minigame) {
+    const savedPlayerSprite = getPlayer();
+    getPlayer().y += 1
+    if (getPlayer().y == height() - 1) {
+      try {
+        setMap(levels[levelY + 1][levelX]);
+        getPlayer().x = savedPlayerSprite.x;
+        getPlayer().y = 0;
+        levelY += 1;
+        nextMap();
+      } catch (error) {
+        console.log(`Attempted to move down:\n${levelY} ${levelX}`)
+      }
     }
   }
 });
 
 onInput("d", () => {
-  const savedPlayerSprite = getPlayer();
-  getPlayer().x += 1;
-  getPlayer().type = "p";
+  if (!tutorial && !minigame) {
+    const savedPlayerSprite = getPlayer();
+    getPlayer().x += 1;
+    getPlayer().type = "p";
   
-  if (getPlayer().x == width() - 1) {
-    try {
-      setMap(levels[levelY][levelX + 1]);
-      getPlayer().x = 0;
-      getPlayer().y = savedPlayerSprite.y;
-      levelX += 1;
-    } catch (error) {
-      console.log(`Attempted to move right:\n${levelY} ${levelX}`)
+    if (getPlayer().x == width() - 1) {
+      try {
+        setMap(levels[levelY][levelX + 1]);
+        getPlayer().x = 0;
+        getPlayer().y = savedPlayerSprite.y;
+        levelX += 1;
+        nextMap();
+      } catch (error) {
+        console.log(`Attempted to move right:\n${levelY} ${levelX}`)
+      }
     }
-  }  
-});
-
-onInput("j", () => {
-  nextLevel();
+  }
 });
 
 onInput("l", () => {
   if (tutorial) { // Start the game!
-    clearInterval(tutorialScreen);
-    setMap(levels[0][0]);
     levelX = 0;
     levelY = 0;
+    clearInterval(tutorialScreen);
+    setMap(levels[0][0]);
     clearText();
     
     game = setInterval(updateGame, 1000);
     guardAI = setInterval(runGuard, 2000);
-    iterator = cyclicIteration(guardPath[level]);
+    iterator = cyclicIteration(guardPath[levelY][levelX]);
     if (screenText[levelX][levelY] != null) {
       screenText[levelX][levelY].forEach((text) => addText(text[0], options=text[1]));
     }
@@ -843,7 +890,7 @@ onInput("l", () => {
     clearText()
     game = setInterval(updateGame, 1000);
     guardAI = setInterval(runGuard, 1000);
-    iterator = cyclicIteration(guardPath[level]);
+    iterator = cyclicIteration(guardPath[0][0]);
     playback = playTune(music.background, Infinity);
     restart = false;
   }
@@ -853,34 +900,36 @@ onInput("l", () => {
 // inputs for player movement control
 let victory = false;
 onInput("i", () => {
-  getTile(getFirst("r").x, getFirst("r").y).forEach(sprites => {
-    if (sprites.type == "t") {
-      victory = true;
+  if (minigame) {
+    getTile(getFirst("r").x, getFirst("r").y).forEach(sprites => {
+      if (sprites.type == "t") {
+        victory = true;
+      }
+    });
+    if (victory) {
+      getFirst("r").type = "e";
+      victory = false;
+      yPath = cyclicIteration([0, 1, 2, 3, 4])
+      pinsFinished++;
+      if (pinsFinished == 2) { // When we finish more pins, the rest go faster
+        clearInterval(pinTimer);
+        pinTimer = setInterval(pinDown, 300);
+      } else if (pinsFinished >= 3) {
+        clearInterval(pinTimer);
+        pinTimer = setInterval(pinDown, 250);
+      }
+    } else {
+      attempts--;
+      splashText(`${attempts}/4 trys left!`, 3000, false);
     }
-  });
-  if (victory) {
-    getFirst("r").type = "e";
-    victory = false;
-    yPath = cyclicIteration([0, 1, 2, 3, 4])
-    pinsFinished++;
-    if (pinsFinished == 2) { // When we finish more pins, the rest go faster
+    if (attempts <= 0) {
       clearInterval(pinTimer);
-      pinTimer = setInterval(pinDown, 300);
-    } else if (pinsFinished >= 3) {
-      clearInterval(pinTimer);
-      pinTimer = setInterval(pinDown, 250);
+      clearInterval(minigameTimer);
+      clearText();
+      addText("You lost!", {color: color`2`});
+      setCaught();
+      minigame = false;
     }
-  } else {
-    attempts--;
-    splashText(`${attempts}/4 trys left!`, 3000, false);
-  }
-  if (attempts <= 0) {
-    clearInterval(pinTimer);
-    clearInterval(minigameTimer);
-    clearText();
-    addText("You lost!", {color: color`2`});
-    setCaught();
-    minigame = false;
   }
 });
 
@@ -1035,6 +1084,7 @@ function setCaught() {
   setMap(misc.lost);
   clearInterval(game);
   clearInterval(guardAI);
+  iterator = null;
   restart = true;
   level = 0;
 }
@@ -1042,32 +1092,18 @@ function setCaught() {
 // TODO: Slowly migrate all the stuff from nextLevel(); to this funcion
 function nextMap() {
   clearText();
+  iterator = cyclicIteration(guardPath[levelY][levelX]);
   if (screenText[levelY][levelX] != null) {
     screenText[levelY][levelX].forEach((text) => addText(text[0], options=text[1]));
   }
-}
-
-/* Credit for this function: Tutorial :D */
-function nextLevel() {
-  clearText();
-  level++;
-
-  const currentLevel = levels[level];
-
-  if (currentLevel !== undefined) {
-    iterator = cyclicIteration(guardPath[level]);
-    setMap(currentLevel);
-    if (screenText[levelY][levelX] != null) {
-      screenText[levelY][levelX].forEach((text) => addText(text[0], options=text[1]));
-    }
-  } else { // No more maps to load so victory!
+  /* TODO: Win function below lol
     addText("You WIN!", { y: 4, color: color`D` });
     playback.end();
     playTune(music.victory);
     setMap(misc.victory);
     clearInterval(game);
     clearInterval(guardAI);
-  }
+  */ 
 }
 
 
@@ -1075,7 +1111,7 @@ function nextLevel() {
 
 // Guard logic
 function runGuard() {
-  if (iterator !== null) {
+  if (iterator != null) {
     const coords = iterator.next();
     const guardSprite = getGuard();
 
@@ -1118,7 +1154,7 @@ function runGuard() {
 
 // Most player physics is here
 afterInput(() => {
-  if (!minigame) {
+  if (!minigame && !tutorial) {
     playerSprite = getPlayer();
     block = getTile(playerSprite.x, playerSprite.y);
     
