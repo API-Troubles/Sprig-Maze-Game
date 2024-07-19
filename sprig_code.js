@@ -414,98 +414,102 @@ LLLLLLL6LLLLLLLL
 // NOTE SELF: Each level should have the player and a checkpoint
 let level = 0
 const levels = [
-  map`
-w...........w
-w...........w
-w...........w
-w..........lw
-w..........lw
+  [
+    map`
+w............
+w............
+w............
+w............
+w............
 www.wwwswwwsw
 w...w...w...w
 w..pw...w...w
 w...w...w...w`,
-  map`
+    map`
 ........w....
 ........w....
 ........wwwww
-........h...l
-p.......h...l
+........h....
+p.......h....
 wwwswwwswwwww
 w...w...w....
 w...w...w....
 w...w...w....`,
-  map`
-.......w..w.k
-.......w..w..
-wwwwww.wssw..
+    map`
 ..........w..
-p.......g.wcc
+..........w.k
+wwwww..wwww..
+..........w..
+p.........wvv
 wwwwwxxw..w..
-.......w..w..
-.......w..h..
-llwwwwww..h..`,
-  map`
-p.w...w...w..
-..w...w...w..
-.kwww.wwwswww
-...j...h.....
-...j...h.....
-wwwwwxwwwvwww
-.......w.....
-.......w.....
-llwwwwww.....`,
-  map`
-p.w...w...w..
-..w...w...w..
-..www.wwwswww
-...j...h.....
-...j...h.....
-wwwwwxwwwvwww
-.......w.....
-.......w...k.
-llwwwwww.....`,
-  map`
-..w..........
-p.wwwwwwwwwww
-..h.......z.l
-..h.......z.l
-..h.......z.l
-sswwwwww.wwww
-..w.......w..
-..w.f...k.w..
-..w.......w..`,
-  map`
-....h...h...l
-....h.g.h...l
-....h...h...l
-wwwwwvvvwwwww
-....w...w....
-....w...w....
-....w...w....
-....wsssw....
-....w...w....`,
-  map`
-...h...hz...l
-...h.g.hz...l
-...h...hz...l
-wvwwvvvwwwwww
-...w...w.kw..
-...w...w..w..
-...h...h..d..
-...w...w..w..
-...w...w..w..`,
-  map`
-...h...hz...l
-...h.g.hz...l
-...h...hz...l
-wvwwvvvwwwwww
-...w...w.kw..
-...w...w..w..
-...h...h..d..
-...w...w..w..
-...w...w..w..`,
-  map``
-  
+....wvvw..h..
+....d..w..h..
+....w..wwwwww`
+  ],
+  [
+    map`
+wwwwwwwwww...
+w........w...
+w........w...
+w........wwww
+w........dh..
+w........dh.p
+w........dh..
+w........wwww
+wwwwwwwwww...`,
+    map`
+....wwwwwww..
+....w.....w..
+....w.....w..
+wwwwwwwcwwwww
+....h.....h..
+...gh.....h.p
+....h.....h..
+wwwwww...wwww
+.....w...w...`,
+    map`
+....wp.w.....
+....w..w.....
+....w..w.....
+wwwwwvvwwwwww
+....j..j.h.jd
+.g..j..j.h.jd
+....j..j.h.jd
+wwwwwvvwwwwww
+....w..w.....`
+  ],
+  [
+    map`
+wwwwwwwwww...
+w........wwww
+w........dh..
+w........dh.p
+w........dh..
+w........wwww
+w........w...
+w........w...
+wwwwwwwwww...`,
+    map`
+.....w.p.w...
+wwwwww...wwww
+....h.....h..
+....h.....h..
+....h.....h..
+wwwwwwssswwww
+w....wcccw..w
+w...........w
+w...........w`,
+    map`
+...w...w.....
+wwww.p.wwwwww
+..h....w....w
+..h....w....w
+..h....d....w
+wwwwwwwwwwwww
+.............
+.............
+.............`
+  ]
 ]
 
 // Misc settings
@@ -532,21 +536,26 @@ const guardPath = [
 
 const screenText = [
   [
-    ["Quick! >>>", { x: 4, y: 3, color: color`0`}]
-  ], 
+    null, 
+    [
+      ["Quick! >>>", { x: 4, y: 3, color: color`0`}]
+    ], 
+    null
+  ],
   [
-    ["Watch out!", { x: 2, y: 3, color: color`0`}],
-    ["lasers! >", { x: 2, y: 5, color: color`0`}]
-  ], 
-  [
+    [
     ["Guard!", { x: 1, y: 3, color: color`0`}]
   ], 
-  [
+    [
     ["Here!", { x: 5, y: 2, color: color`0`}]
   ],
-  null,
-  null,
-  null
+    null,
+  ],
+  [
+    null,
+    null,
+    null
+  ]
 ]
 
 const misc = {
@@ -667,6 +676,9 @@ const music = {
 15000`
 }
 
+let levelX = 0
+let levelY = 0
+
 let minigame = false;
 let tutorial = true;
 let restart = false;
@@ -741,45 +753,67 @@ function tutorialAnimation() {
 
 // inputs for player movement control
 onInput("w", () => {
-  if (!tutorial && !minigame) {
+  const savedPlayerSprite = getPlayer();
+  getPlayer().y -= 1
+  if (getPlayer().y == 0) {
     try {
-      getFirst(player).y -= 1;
+      setMap(levels[levelY - 1][levelX]);
+      getPlayer().x = savedPlayerSprite.x;
+      getPlayer().y = height() - 1;      
+      levelY -= 1;
     } catch (error) {
-      getFirst(player2).y -= 1;
+      console.log(`Attempted to move up:\n${levelY} ${levelX}`)
     }
   }
 });
 
 onInput("a", () => {
-  if (!tutorial && !minigame) {
+  const savedPlayerSprite = getPlayer();
+  getPlayer().x -= 1;
+  getPlayer().type = "o";
+
+  if (getPlayer().x == 0) {
     try {
-      getFirst(player).x -= 1;
-      getFirst("p").type = "o";
+      setMap(levels[levelY][levelX - 1]);
+      getPlayer().x = width() - 1;
+      getPlayer().y = savedPlayerSprite.y;
+      levelX -= 1;
     } catch (error) {
-      getFirst(player2).x -= 1;
+      console.log(`Attempted to move left:\n${levelY} ${levelX}`)
     }
-  }
+  } 
 });
 
 onInput("s", () => {
-  if (!tutorial && !minigame) {
+  const savedPlayerSprite = getPlayer();
+  getPlayer().y += 1
+  if (getPlayer().y == height() - 1) {
     try {
-      getFirst(player).y += 1;
+      setMap(levels[levelY + 1][levelX]);
+      getPlayer().x = savedPlayerSprite.x;
+      getPlayer().y = 0;
+      levelY += 1;
     } catch (error) {
-      getFirst(player2).y += 1;
+      console.log(`Attempted to move down:\n${levelY} ${levelX}`)
     }
   }
 });
 
 onInput("d", () => {
-  if (!tutorial && !minigame) {
+  const savedPlayerSprite = getPlayer();
+  getPlayer().x += 1;
+  getPlayer().type = "p";
+  
+  if (getPlayer().x == width() - 1) {
     try {
-      getFirst(player2).x += 1;
-      getFirst("o").type = "p";
+      setMap(levels[levelY][levelX + 1]);
+      getPlayer().x = 0;
+      getPlayer().y = savedPlayerSprite.y;
+      levelX += 1;
     } catch (error) {
-      getFirst(player).x += 1;
+      console.log(`Attempted to move right:\n${levelY} ${levelX}`)
     }
-  }
+  }  
 });
 
 onInput("j", () => {
@@ -789,18 +823,23 @@ onInput("j", () => {
 onInput("l", () => {
   if (tutorial) { // Start the game!
     clearInterval(tutorialScreen);
-    setMap(levels[0]);
+    setMap(levels[0][0]);
+    levelX = 0;
+    levelY = 0;
     clearText();
+    
     game = setInterval(updateGame, 1000);
     guardAI = setInterval(runGuard, 2000);
     iterator = cyclicIteration(guardPath[level]);
-    screenText[0].forEach((text) => addText(text[0], options=text[1]));
+    if (screenText[levelX][levelY] != null) {
+      screenText[levelX][levelY].forEach((text) => addText(text[0], options=text[1]));
+    }
     tutorial = false;
     
   } else if (restart) { // Restart game if caught
     level = 0;
     var timer = 600;
-    setMap(levels[0]);
+    setMap(levels[0][0]);
     clearText()
     game = setInterval(updateGame, 1000);
     guardAI = setInterval(runGuard, 1000);
@@ -901,8 +940,8 @@ function splashText(text, time = 3000, addTextBack = true) {
     clearText();
     if (addTextBack) {
       timerText = addText(`Escape in ${timer} secs`, { x: 1, y: 0, color: color`2`});
-      if (screenText[level] != null) {
-        screenText[level].forEach((text) => addText(text[0], options=text[1]));
+      if (screenText[levelY][levelX] != null) {
+        screenText[levelY][levelX].forEach((text) => addText(text[0], options=text[1]));
       }
     }
   }, time); //Clear splash text and put other text back
@@ -1000,6 +1039,14 @@ function setCaught() {
   level = 0;
 }
 
+// TODO: Slowly migrate all the stuff from nextLevel(); to this funcion
+function nextMap() {
+  clearText();
+  if (screenText[levelY][levelX] != null) {
+    screenText[levelY][levelX].forEach((text) => addText(text[0], options=text[1]));
+  }
+}
+
 /* Credit for this function: Tutorial :D */
 function nextLevel() {
   clearText();
@@ -1010,8 +1057,8 @@ function nextLevel() {
   if (currentLevel !== undefined) {
     iterator = cyclicIteration(guardPath[level]);
     setMap(currentLevel);
-    if (screenText[level] != null) {
-      screenText[level].forEach((text) => addText(text[0], options=text[1]));
+    if (screenText[levelY][levelX] != null) {
+      screenText[levelY][levelX].forEach((text) => addText(text[0], options=text[1]));
     }
   } else { // No more maps to load so victory!
     addText("You WIN!", { y: 4, color: color`D` });
