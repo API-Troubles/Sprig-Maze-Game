@@ -957,6 +957,7 @@ function startLockGame() {
   playerPos = getPlayer();
   attempts = 4;      // Reset the attempts
   pinsFinished = 0;  // & progress of minigame
+  let minigameTimerCount = 15;
   minigame = true;
   clearInterval(game);
   clearInterval(guardAI);
@@ -965,7 +966,7 @@ function startLockGame() {
   setMap(misc.lockGame);
 }
 
-minigameTimerCount = 15;
+let minigameTimerCount = 15;
 function runTimer() {
   addText(`Pick lock in ${minigameTimerCount} secs`, { x: 0, y: 0, color: color`2`});
   if (timer <= 0) {
@@ -986,7 +987,7 @@ function pinDown() {
       game = setInterval(updateGame, 1000);
       guardAI = setInterval(runGuard, 1000);
       splashText("Unlocked vault!");
-      setMap(levels[level]);
+      setMap(levels[levelY][levelX]);
       getPlayer().x = playerPos.x;
       getPlayer().y = playerPos.y;
       getPlayer().type = playerPos.type;
@@ -1107,7 +1108,8 @@ function setCaught() {
   level = 0;
 }
 
-// TODO: Slowly migrate all the stuff from nextLevel(); to this funcion
+// TODO: this handles util functions for the map changes
+// otherwise too repetitive to do for each input
 function nextMap() {
   clearText();
   iterator = cyclicIteration(guardPath[levelY][levelX]);
@@ -1120,6 +1122,11 @@ function nextMap() {
     if (playerStats.getWardenKey) {
       getAll("d").forEach(door => door.remove());
     }
+  }
+
+  // Check for keys alr obtained
+  if (playerStats.getWardenKey) {
+    getAll("n").forEach(key => key.remove());
   }
   /* TODO: Win function below lol
     addText("You WIN!", { y: 4, color: color`D` });
