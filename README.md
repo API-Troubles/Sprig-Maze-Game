@@ -6,10 +6,15 @@ The founder of hack club, Zach, caught you faking your tickets (How could you ma
 
 Although after all that I think I'd rather you stay in prison lol. Also isn't it ironic that I'm submitting a game, about how someone faked tickets as lore, to get tickets myself? Hi reviewers!
 
+## How to play
+
+This game is a puzzle/timed sort of game I guess. 
+
+Your goal (if you didn't read the lore) is to escape! Do so by unlocking new sections of the map, gettings keys, completing minigames, etc. I'm trying not to spoil too much ok. 
+
 
 ## Credit
 
 The following sources were used. All code used from other sources was modified to sort my use case.
-- level up function: Sprig tutorial
 - Timer mechanics & concept: https://sprig.hackclub.com/~/pIrXiIjFINorvL2bCYM9
 - The back-and-forth infinite loopy thingy: ChatGPT was prompted to create a script to iterate through an array back and fourth forever, I took the function and used it to make the guard go back and forth
