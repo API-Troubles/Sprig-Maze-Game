@@ -36,6 +36,7 @@ const doorLockedHorz = "x";
 
 const key = "k";
 const masterKey = "m";
+const wardenKey = "n"
 
 let vault = "y"
 
@@ -61,7 +62,7 @@ let minigameTimer = null;
 
 // The 3 things the player needs to do to escape
 let playerStats = {
-  unlockMainHall: false,
+  getWardenKey: false,
   lockpickMinigameDone: false,
   getMainKey: false
 };
@@ -344,6 +345,23 @@ LLLLLLL6LLLLLLLL
 ................
 ................
 ................`],
+  [wardenKey, bitmap`
+................
+................
+................
+................
+......555.......
+.....5...5......
+.....5...5......
+......555.......
+.......5........
+.......55.......
+.......5........
+.......55.......
+................
+................
+................
+................`],
   
   [lockPin, bitmap`
 ......0000......
@@ -425,7 +443,7 @@ w............
 w............
 w............
 w............
-w............
+w...y........
 www.wwwswwwsw
 w...w...w...w
 w..pw...w...w
@@ -508,8 +526,8 @@ w...........w`,
 ...w...w.....
 wwww.p.wwwwww
 ..h....w....w
-..h....w....w
-..h....d....w
+..h....w..n.w
+..h....j....w
 wwwwwwwwwwwww
 .............
 .............
@@ -1096,6 +1114,13 @@ function nextMap() {
   if (screenText[levelY][levelX] != null) {
     screenText[levelY][levelX].forEach((text) => addText(text[0], options=text[1]));
   }
+
+  // Check for certain rooms
+  if ((levelY == 1 || levelY == 2) && (levelX == 0)) {
+    if (playerStats.getWardenKey) {
+      getAll("d").forEach(door => door.remove());
+    }
+  }
   /* TODO: Win function below lol
     addText("You WIN!", { y: 4, color: color`D` });
     playback.end();
@@ -1173,9 +1198,21 @@ afterInput(() => {
       //startLockGame();
     }
 
-    // If touch checkpoint promote next level!
-    if (blockHas(block, "l")) {
-      nextLevel();
+    // If touch vault finally, START DA MINIGAME!!!!!!
+    if (blockHas(block, "y")) {
+      startLockGame();
+    }
+
+    // If touch warden key
+    if (blockHas(block, "n")) {
+      getFirst("n").remove();
+      playerStats.getWardenKey = true;
+    }
+
+    // If touch master key
+    if (blockHas(block, "m")) {
+      getFirst("m").remove();
+      playerStats.getMasterKey = true;
     }
 
     // If in 3x3 range of guard, caught!
