@@ -28,6 +28,8 @@ const laserHorz = "h";
 const laserHorzOff = "j";
 
 // This door is never unlockable
+const buffDoor = "b";
+
 const door = "d";
 const doorHorz = "s";
   
@@ -223,24 +225,24 @@ L..............L
 ................
 .......111......
 ......LLLLL.....`],
-  
-  [levelUp, bitmap`
-................
-.DDD..DDDD..DDD.
-.D............D.
-.D............D.
-................
-................
-.D............D.
-.D............D.
-.D............D.
-.D............D.
-................
-................
-.D............D.
-.D............D.
-.DDD..DDDD..DDD.
-................`],
+
+  [buffDoor, bitmap`
+....LLLLLLL.....
+....L33333L.....
+....L33333L.....
+....L33333L.....
+....L33333L.....
+....L33333L.....
+....L33333L.....
+....L33333L.....
+....L33333L.....
+....L33333L.....
+....L33333L.....
+....L33333L.....
+....L33333L.....
+....L33333L.....
+....L33333L.....
+....LLLLLLL.....`],
   
   [door, bitmap`
 ....LLLLLLL.....
@@ -435,19 +437,19 @@ LLLLLLL6LLLLLLLL
 
 // Setup levels and different misc. screens here
 // Using 13x9 size for most maps
-// NOTE SELF: Each level should have the player
+// NOTE SELF: Each level should have the playerlw
 const levels = [
   [
     map`
-w............
-w............
-w............
-w............
-w...y........
+.............
+.............
+.............
+.............
+.............
 www.wwwswwwsw
 w...w...w...w
 w..pw...w...w
-w...w...w...w`,
+wwwwwwwwwwwww`,
     map`
 ........w....
 ........w....
@@ -457,13 +459,13 @@ p.......h....
 wwwswwwswwwww
 w...w...w....
 w...w...w....
-w...w...w....`,
+wwwwwwwww....`,
     map`
 ..........w..
 ..........w.k
 wwwww..wwww..
 ..........w..
-p.......f.wvv
+.p......f.wvv
 wwwwwxxw..w..
 ....wvvw..h..
 ....d..w..h..
@@ -475,10 +477,10 @@ wwwwwwwwww...
 w........w...
 w.....g..w...
 w........wwww
-w........dh..
-wwwww....dh.p
-w.j.h....dh..
-wyj.h....wwww
+wwwwww...dh..
+w..j.h...dho.
+w..j.h...dh..
+wy.j.h...wwww
 wwwwwwwwww...`,
     map`
 ....wwwwwww..
@@ -486,42 +488,52 @@ wwwwwwwwww...`,
 ....w.....w..
 wwwwwwwcwwwww
 ....h.....h..
-..g.h.....h.p
+..g.h.....ho.
 ....h.....h..
 wwwwww...wwww
 .....w...w...`,
     map`
+....w..w.....
 ....wp.w.....
 ....w..w.....
-....w..w.....
 wwwwwvvwwwwww
-....j..j.h.jd
-....j..jfh.jd
-....j..j.h.jd
+..h.j..j.h.jb
+..h.j..jfh.jb
+..h.j..j.h.jb
 wwwwwvvwwwwww
-....w..w.....`
+....w..w.....`,
+    map`
+.............
+.............
+.............
+.............
+.............
+.............
+.............
+.............
+.............` // <= This map is just for win state lol
   ],
   [
     map`
 wwwwwwwwww...
 w........wwww
-w........dh..
-w.....g..dh.p
+w.....g..dh..
+w........dho.
 wwwww....dh..
 w.j.h....wwww
 wmj.h....w...
 w.j.h....w...
 wwwwwwwwww...`,
     map`
-.....w.p.w...
-wwwwww...wwww
-....h.....h..
-....h.....h..
-....h.....h..
-wwwwwwssswwww
-w....wcccw..w
-w...........w
-w...........w`,
+.....w...w...
+wwwwww.p.wwww
+..j.h.....h..
+..j.h.....h..
+..j.h.....h..
+wwwwwwwwwwwww
+.............
+.............
+.............`,
     map`
 ...w...w.....
 wwww.p.wwwwww
@@ -606,7 +618,8 @@ const screenText = [
   [
     null, 
     null,
-    null,
+    ["Exit?", { x: 2, y: 2, color: color`0`}],
+    [">>>", { x: 2, y: 3, color: color`0`}]
   ],
   [
     null,
@@ -627,16 +640,16 @@ const misc = {
 .............
 .............`,
   lost: map`
-wwwwwwwwwwwww
-w...........w
-w...........w
-w...........w
-w...........w
-w...........w
+.............
+.............
+.............
+.............
+.............
+.............
 wwwswwwswwwsw
 w...w...w...w
 w..pw...w...w
-w...w...w...w`,
+wwwwwwwwwwwww`,
   victory: map`
 .w...........
 .w...........
@@ -651,11 +664,11 @@ ww...........
 .............
 .p...........
 .............
-.l...........
-.............
 .z...........
 .............
 .k...........
+.............
+.............
 .............`,
   tutorialHostile: map`
 .............
@@ -760,9 +773,8 @@ let x_align = 4;
 let tutorialText = [
   [
     ["You!", { x: x_align, y: 3, color: color`0`}],
-    ["Next Lv", { x: x_align, y: 6, color: color`0`}],
-    ["Locked door", { x: x_align, y: 9, color: color`0`}],
-    ["Key = open", { x: x_align, y: 12, color: color`0`}],
+    ["Locked door", { x: x_align, y: 6, color: color`0`}],
+    ["Key = open", { x: x_align, y: 9, color: color`0`}],
   ],
   [
     ["Avoid Guards", { x: x_align, y: 3, color: color`0` }],
@@ -775,7 +787,8 @@ let tutorialText = [
     ["faking points. You", { x: 0, y: 6, color: color`0` }],
     ["have been sentenced to", { x: 0, y: 7, color: color`0` }],
     ["LIFE in Arcade jail.", { x: 0, y: 8, color: color`0` }],
-    ["Tip: tutorial loops", { x: 0, y: 12, color: color`9` }]
+    ["Tip: tutorial loops", { x: 0, y: 11, color: color`9` }],
+    ["check git for more", { x: 0, y: 12, color: color`9` }]
   ]
 ]
 
@@ -851,6 +864,7 @@ onInput("s", () => {
   if (!tutorial && !minigame) {
     const savedPlayerSprite = getPlayer();
     getPlayer().y += 1
+    
     if (getPlayer().y == height() - 1) {
       try {
         setMap(levels[levelY + 1][levelX]);
@@ -993,6 +1007,8 @@ function pinDown() {
       getPlayer().type = playerPos.type;
       victory = false;
       minigame = false; // <= Allow player movement and loops to continue
+      playerStats.lockpickMinigameDone = true;
+      gerFirst("y").remove();
     }
   } catch (error) {
     console.log(error);
@@ -1099,7 +1115,7 @@ function setCaught() {
   clearText(); // Clear text which may be onscreen before adding screen
   addText("You got caught!", options = { x: 3, y: 3, color: color`3` });
   addText("Press 'L' to", options = { x: 4, y: 5, color: color`0` });
-  addText("lockpick out", options = { x: 4, y: 6, color: color`0` })
+  addText("open the door", options = { x: 4, y: 6, color: color`0` })
   setMap(misc.lost);
   clearInterval(game);
   clearInterval(guardAI);
@@ -1128,14 +1144,22 @@ function nextMap() {
   if (playerStats.getWardenKey) {
     getAll("n").forEach(key => key.remove());
   }
-  /* TODO: Win function below lol
-    addText("You WIN!", { y: 4, color: color`D` });
-    playback.end();
-    playTune(music.victory);
-    setMap(misc.victory);
-    clearInterval(game);
-    clearInterval(guardAI);
-  */ 
+
+  
+  // Unlock main door!
+  if (playerStats.getWardenKey && playerStats.lockpickMinigameDone) {
+    getAll("b").forEach(door => door.remove());
+  }
+
+  // detect win state 
+  if (levelY == 1 && levelX == 3) {
+      addText("You WIN!", { y: 4, color: color`D` });
+      playback.end();
+      playTune(music.victory);
+      setMap(misc.victory);
+      clearInterval(game);
+      clearInterval(guardAI);
+  }
 }
 
 
