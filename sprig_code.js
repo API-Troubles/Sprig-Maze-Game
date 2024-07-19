@@ -27,9 +27,10 @@ const laserVertOff = "c";
 const laserHorz = "h";
 const laserHorzOff = "j";
 
-// This door is never unlockable
 const buffDoor = "b";
+const strongDoor = "s";
 
+  // This door is never unlockable
 const door = "d";
 const doorHorz = "s";
   
@@ -38,9 +39,9 @@ const doorLockedHorz = "x";
 
 const key = "k";
 const masterKey = "m";
-const wardenKey = "n"
+const wardenKey = "n";
 
-let vault = "y"
+let vault = "y";
 
 // Minigame stuff
 // WIP!
@@ -242,6 +243,23 @@ L..............L
 ....L33333L.....
 ....L33333L.....
 ....L33333L.....
+....LLLLLLL.....`],
+  [strongDoor, bitmap`
+....LLLLLLL.....
+....L55555L.....
+....L55555L.....
+....L55555L.....
+....L55555L.....
+....L55555L.....
+....L55555L.....
+....L55555L.....
+....L55555L.....
+....L55555L.....
+....L55555L.....
+....L55555L.....
+....L55555L.....
+....L55555L.....
+....L55555L.....
 ....LLLLLLL.....`],
   
   [door, bitmap`
@@ -477,9 +495,9 @@ wwwwwwwwww...
 w........w...
 w.....g..w...
 w........wwww
-wwwwww...dh..
-w..j.h...dho.
-w..j.h...dh..
+wwwwww...sh..
+w..j.h...sho.
+w..j.h...sh..
 wy.j.h...wwww
 wwwwwwwwww...`,
     map`
@@ -517,9 +535,9 @@ wwwwwvvwwwwww
     map`
 wwwwwwwwww...
 w........wwww
-w.....g..dh..
-w........dho.
-wwwww....dh..
+w.....g..sh..
+w........sho.
+wwwww....sh..
 w.j.h....wwww
 wmj.h....w...
 w.j.h....w...
@@ -695,38 +713,38 @@ const music = {
 500: G4-500 + F4-500 + E4-500 + D4-500,
 14500`,
   background: tune`
-500: C5-500 + A4~500 + G5~500 + F5-500,
-500: G4/500 + F5-500,
-500: G4/500 + G5~500,
-500: D4-500 + B4/500,
-500: C5-500 + A4~500 + G5~500 + F5-500,
-500: G4/500 + F5-500,
-500: G4/500 + G5~500,
-500: D4-500 + B4/500,
-500: C5-500 + A4~500 + G5~500 + F5-500,
-500: G4/500 + F5-500,
-500: G4/500 + G5~500,
-500: D4-500 + B4/500,
-500: C5-500 + A4~500 + G5~500 + F5-500,
-500: G4/500 + F5-500,
-500: G4/500 + G5~500,
-500: D4-500 + B4/500,
-500: C5-500 + A4~500 + G5~500 + F5-500,
-500: G4/500 + F5-500,
-500: G4/500 + G5~500,
-500: D4-500 + B4/500,
-500: C5-500 + A4~500 + G5~500 + F5-500,
-500: G4/500 + F5-500,
-500: G4/500 + G5~500,
-500: D4-500 + B4/500,
-500: C5-500 + A4~500 + G5~500 + F5-500,
-500: G4/500 + F5-500,
-500: G4/500 + G5~500,
-500: D4-500 + B4/500,
-500: C5-500 + A4~500 + G5~500 + F5-500,
-500: G4/500 + F5-500,
-500: G4/500 + G5~500,
-500: D4-500 + B4/500`,
+500: D5-500,
+500: C5^500 + G4^500,
+500: F4^500 + C4^500 + D5-500 + B4~500,
+500: C5^500,
+500: A4-500,
+500: C5^500 + G4^500,
+500: F4^500 + C4^500 + B4-500 + D5~500,
+500: C5^500,
+500: D5-500,
+500: C5^500 + G4^500,
+500: F4^500 + C4^500 + B4-500 + D5~500,
+500: C5^500,
+500: A4-500,
+500: C5^500 + G4^500,
+500: F4^500 + C4^500 + D5-500 + B4~500,
+500: C5^500,
+500: D5-500,
+500: C5^500 + G4^500,
+500: F4^500 + C4^500 + D5-500 + B4~500,
+500: C5^500,
+500: A4-500,
+500: C5^500 + G4^500,
+500: F4^500 + C4^500 + D5~500 + B4-500,
+500: C5^500,
+500: D5-500,
+500: C5^500 + G4^500,
+500: F4^500 + C4^500 + B4-500 + D5~500,
+500: C5^500,
+500: A4-500,
+500: C5^500 + G4^500,
+500: F4^500 + C4^500 + D5-500 + B4~500,
+500: C5^500`,
   victory: tune`
 410.958904109589: E4-410.958904109589,
 410.958904109589: F4-410.958904109589,
@@ -756,11 +774,11 @@ let restart = false;
 let game = null;
 let guardAI = null;
 let iterator = null;
-let timer = 300;
+var timer = 300;
 
 let playback = playTune(music.background, Infinity);
 
-setSolids([player, player2, wall, door, doorHorz, doorLocked, doorLockedHorz, guard, guard2]);
+setSolids([player, player2, wall, door, buffDoor, strongDoor, doorHorz, doorLocked, doorLockedHorz, guard, guard2]);
 
 setPushables({
   [player]: []
@@ -900,6 +918,7 @@ onInput("d", () => {
 });
 
 onInput("l", () => {
+  console.log(timer);
   if (tutorial) { // Start the game!
     levelX = 0;
     levelY = 0;
@@ -915,11 +934,12 @@ onInput("l", () => {
     }
     tutorial = false;
     
-  } else if (restart) { // Restart game if caught
+  } else if (restart && timer > 0) { // Restart game if caught]\
     level = 0;
-    var timer = 600;
+    levelX = 0;
+    levelY = 0;
     setMap(levels[0][0]);
-    clearText()
+    clearText();
     game = setInterval(updateGame, 1000);
     guardAI = setInterval(runGuard, 1000);
     iterator = cyclicIteration(guardPath[0][0]);
@@ -1109,7 +1129,7 @@ function cyclicIteration(array) {
 }
 
 // Aw man I got caught by a guard!
-function setCaught() {
+function setCaught(allowRestart = true) {
   playback.end();
   playTune(music.caught);
   clearText(); // Clear text which may be onscreen before adding screen
@@ -1142,9 +1162,14 @@ function nextMap() {
 
   // Check for keys alr obtained
   if (playerStats.getWardenKey) {
-    getAll("n").forEach(key => key.remove());
+    getAll("s").forEach(key => key.remove());
   }
 
+  // Unlock main hall doors!
+  if (playerStats.getMainKey) {
+    getAll("x").forEach(door => door.remove());
+    getAll("k").forEach(key => key.remove());
+  }
   
   // Unlock main door!
   if (playerStats.getWardenKey && playerStats.lockpickMinigameDone) {
@@ -1225,8 +1250,8 @@ afterInput(() => {
       getAll("z").forEach((door) => door.remove());
 
       getFirst("k").remove();
+      playerStats.getMainKey = true;
       splashText("Doors open!", 1000);
-      //startLockGame();
     }
 
     // If touch vault finally, START DA MINIGAME!!!!!!
@@ -1238,12 +1263,14 @@ afterInput(() => {
     if (blockHas(block, "n")) {
       getFirst("n").remove();
       playerStats.getWardenKey = true;
+      splashText("What this do?", 1000)
     }
 
     // If touch master key
     if (blockHas(block, "m")) {
       getFirst("m").remove();
       playerStats.getMasterKey = true;
+      splashText("Awesome!", 1000)
     }
 
     // If in 3x3 range of guard, caught!
@@ -1301,7 +1328,7 @@ function updateGame() {
 
   // Check if times out and Hakkuun has woken up!
   if (timer <= 0) {
-    setCaught();
+    setCaught(false);
   }
   
   timer--;
