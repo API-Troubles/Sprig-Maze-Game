@@ -21,6 +21,11 @@ But to help you out here are some tips!
 
 - You can try again! Hitting a laser (or getting caught in any other way) will take 30 seconds off the time limit, but you aren't completely screwed!
 
+## Movement keys
+- WASD = movement
+- L = start/restart game as directed by screen prompts
+- I = set the pins on the lockpick minigame
+
 ## Issues
 
 I tested this game as much as I could! And I certainly hope there are no bugs! But ~~if~~ **when** I'm wrong, create an issue and I'll notice eventually!
