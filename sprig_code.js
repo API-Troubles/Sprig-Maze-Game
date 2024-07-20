@@ -28,7 +28,7 @@ const laserHorz = "h";
 const laserHorzOff = "j";
 
 const buffDoor = "b";
-const strongDoor = "s";
+const strongDoor = "u";
 
   // This door is never unlockable
 const door = "d";
@@ -65,9 +65,9 @@ let minigameTimer = null;
 
 // The 3 things the player needs to do to escape
 let playerStats = {
-  getWardenKey: false,
-  lockpickMinigameDone: false,
-  getMainKey: false
+  getWardenKey: true,
+  lockpickMinigameDone: true,
+  getMainKey: true
 };
 
 setLegend(
@@ -495,9 +495,9 @@ wwwwwwwwww...
 w........w...
 w.....g..w...
 w........wwww
-wwwwww...sh..
-w..j.h...sho.
-w..j.h...sh..
+wwwwww...uh..
+w..j.h...uho.
+w..j.h...uh..
 wy.j.h...wwww
 wwwwwwwwww...`,
     map`
@@ -535,9 +535,9 @@ wwwwwvvwwwwww
     map`
 wwwwwwwwww...
 w........wwww
-w.....g..sh..
-w........sho.
-wwwww....sh..
+w.....g..uh..
+w........uho.
+wwwww....uh..
 w.j.h....wwww
 wmj.h....w...
 w.j.h....w...
@@ -918,7 +918,6 @@ onInput("d", () => {
 });
 
 onInput("l", () => {
-  console.log(timer);
   if (tutorial) { // Start the game!
     levelX = 0;
     levelY = 0;
@@ -934,7 +933,7 @@ onInput("l", () => {
     }
     tutorial = false;
     
-  } else if (restart && timer > 0) { // Restart game if caught]\
+  } else if (restart && timer > 0) { // Restart game if caught
     level = 0;
     levelX = 0;
     levelY = 0;
@@ -1018,17 +1017,22 @@ function pinDown() {
     } else if (pinsFinished == 4) { // <= This determines if we win da minigame
       clearInterval(pinTimer);
       clearInterval(minigameTimer);
+      
       game = setInterval(updateGame, 1000);
       guardAI = setInterval(runGuard, 1000);
+      
       splashText("Unlocked vault!");
       setMap(levels[levelY][levelX]);
+      
       getPlayer().x = playerPos.x;
       getPlayer().y = playerPos.y;
+      
       getPlayer().type = playerPos.type;
       victory = false;
       minigame = false; // <= Allow player movement and loops to continue
       playerStats.lockpickMinigameDone = true;
-      gerFirst("y").remove();
+      getFirst("y").remove();
+      nextMap();
     }
   } catch (error) {
     console.log(error);
@@ -1069,7 +1073,6 @@ function getPlayer() {
   } else {
     throw new Error('No player sprite');
   }
-  console.log(`Player Coords: (${playerModel.x}, ${playerModel.y})`)
   return playerModel;
 }
 
@@ -1147,22 +1150,16 @@ function setCaught(allowRestart = true) {
 // TODO: this handles util functions for the map changes
 // otherwise too repetitive to do for each input
 function nextMap() {
+  console.log(`Ok so current map is ${levelX}, ${levelY}`);
   clearText();
   iterator = cyclicIteration(guardPath[levelY][levelX]);
   if (screenText[levelY][levelX] != null) {
     screenText[levelY][levelX].forEach((text) => addText(text[0], options=text[1]));
   }
 
-  // Check for certain rooms
-  if ((levelY == 1 || levelY == 2) && (levelX == 0)) {
-    if (playerStats.getWardenKey) {
-      getAll("d").forEach(door => door.remove());
-    }
-  }
-
   // Check for keys alr obtained
   if (playerStats.getWardenKey) {
-    getAll("s").forEach(key => key.remove());
+    getAll("u").forEach(key => key.remove());
   }
 
   // Unlock main hall doors!
@@ -1173,6 +1170,7 @@ function nextMap() {
   
   // Unlock main door!
   if (playerStats.getWardenKey && playerStats.lockpickMinigameDone) {
+    console.log(getAll("b"))
     getAll("b").forEach(door => door.remove());
   }
 
@@ -1188,11 +1186,11 @@ function nextMap() {
 }
 
 
-/* After ALL THAT SETUP ABOVE ME comes the fun part! */
-
 // Guard logic
 function runGuard() {
+  iterator = null;
   if (iterator != null) {
+    console.log("guard exec")
     const coords = iterator.next();
     const guardSprite = getGuard();
 
@@ -1215,7 +1213,7 @@ function runGuard() {
       }
     }
   }
-
+  /*
   let guard = getGuard();
   if (guard != null) {
     for (let x = guard.x - 1; x <= guard.x + 1; x++) {
@@ -1230,7 +1228,7 @@ function runGuard() {
         }
       }
     }
-  }
+  } */
 }
 
 // Most player physics is here
@@ -1274,6 +1272,7 @@ afterInput(() => {
     }
 
     // If in 3x3 range of guard, caught!
+    /*
     let guard = getGuard();
     if (guard != null) {
       for (let x = guard.x - 1; x <= guard.x + 1; x++) {
@@ -1288,7 +1287,7 @@ afterInput(() => {
           }
         }
       }
-    }
+    } */
   }
 });
 
