@@ -1153,27 +1153,23 @@ function setCaught(allowRestart = true) {
 // TODO: this handles util functions for the map changes
 // otherwise too repetitive to do for each input
 function nextMap() {
-  console.log(`Entering nextMap with levelX: ${levelX}, levelY: ${levelY}`);
   clearText();
   
   iterator = cyclicIteration(guardPath[levelY][levelX]);
 
-  // Unlock main door!
+  // Unlock main prison door!
   const mainDoors = getAll("a");
-  console.log("Checking main door conditions:", playerStats.getWardenKey, playerStats.lockpickMinigameDone, mainDoors.length);
   try {
     if (playerStats.getWardenKey && playerStats.lockpickMinigameDone && mainDoors.length !== 0) {
-      console.log("Unlocking main door.");
       mainDoors.forEach(door => door.remove());
     }
   } catch (error) {
-    console.error("Error while unlocking main door:", error);
+    console.error("Error while unlocking main prison door:", error);
   }
 
   // Add text to screen
   try {
     if (screenText[levelY][levelX] != null) {
-      console.log("Adding screen text.");
       screenText[levelY][levelX].forEach((text) => addText(text[0], options=text[1]));
     }
   } catch (error) {
@@ -1182,10 +1178,8 @@ function nextMap() {
 
   // Check for keys already obtained
   const wardenKeys = getAll("u");
-  console.log("Checking warden key condition:", playerStats.getWardenKey, wardenKeys.length);
   try {
     if (playerStats.getWardenKey && wardenKeys.length !== 0) {
-      console.log("Removing warden keys.");
       wardenKeys.forEach(key => key.remove());
     }
   } catch (error) {
@@ -1195,10 +1189,8 @@ function nextMap() {
   // Unlock main hall doors!
   const mainHallDoors = getAll("x");
   const mainKeys = getAll("k");
-  console.log("Checking main hall door conditions:", playerStats.getMainKey, mainHallDoors.length);
   try {
     if (playerStats.getMainKey && mainHallDoors.length !== 0) {
-      console.log("Unlocking main hall doors.");
       mainHallDoors.forEach(door => door.remove());
       mainKeys.forEach(key => key.remove());
     }
@@ -1207,18 +1199,14 @@ function nextMap() {
   }
 
   // Detect win state
-  console.log("Checking win state condition:", levelX, levelY);
   try {
     if (levelX === 3 && levelY === 1) {
-      console.log("Win condition met.");
       addText("You WIN!", { y: 4, color: color`D` });
       playback.end();
       playTune(music.victory);
       setMap(misc.victory);
       clearInterval(game);
       clearInterval(guardAI);
-    } else {
-      console.log("Not end D:");
     }
   } catch (error) {
     console.error("Error while detecting win state:", error);
