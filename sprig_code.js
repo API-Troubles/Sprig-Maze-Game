@@ -774,7 +774,7 @@ let restart = false;
 let game = null;
 let guardAI = null;
 let iterator = null;
-var timer = 300;
+var timer = 40;
 
 let playback = playTune(music.background, Infinity);
 
@@ -933,8 +933,9 @@ onInput("l", () => {
     }
     tutorial = false;
     
-  } else if (restart && timer > 0) { // Restart game if caught
-    level = 0;
+  } else if (restart && timer > 30) { // Restart game if caught
+    timer = timer - 30 // Pentaly for getting caught
+
     levelX = 0;
     levelY = 0;
     setMap(levels[0][0]);
@@ -1137,8 +1138,10 @@ function setCaught(allowRestart = true) {
   playTune(music.caught);
   clearText(); // Clear text which may be onscreen before adding screen
   addText("You got caught!", options = { x: 3, y: 3, color: color`3` });
-  addText("Press 'L' to", options = { x: 4, y: 5, color: color`0` });
-  addText("open the door", options = { x: 4, y: 6, color: color`0` })
+  if (timer > 30) {
+    addText("Press 'L' to", options = { x: 4, y: 5, color: color`0` });
+    addText("open the door", options = { x: 4, y: 6, color: color`0` });
+  }
   setMap(misc.lost);
   clearInterval(game);
   clearInterval(guardAI);
