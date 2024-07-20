@@ -774,7 +774,7 @@ let restart = false;
 let game = null;
 let guardAI = null;
 let iterator = null;
-var timer = 40;
+var timer = 300;
 
 let playback = playTune(music.background, Infinity);
 
