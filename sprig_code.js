@@ -27,7 +27,7 @@ const laserVertOff = "c";
 const laserHorz = "h";
 const laserHorzOff = "j";
 
-const buffDoor = "b";
+const buffDoor = "a";
 const strongDoor = "u";
 
   // This door is never unlockable
@@ -515,9 +515,9 @@ wwwwww...wwww
 ....wp.w.....
 ....w..w.....
 wwwwwvvwwwwww
-..h.j..j.h.jb
-..h.j..jfh.jb
-..h.j..j.h.jb
+..h.j..j.h.ja
+..h.j..jfh.ja
+..h.j..j.h.ja
 wwwwwvvwwwwww
 ....w..w.....`,
     map`
@@ -525,7 +525,7 @@ wwwwwvvwwwwww
 .............
 .............
 .............
-.............
+p............
 .............
 .............
 .............
@@ -1150,32 +1150,35 @@ function setCaught(allowRestart = true) {
 // TODO: this handles util functions for the map changes
 // otherwise too repetitive to do for each input
 function nextMap() {
-  console.log(`Ok so current map is ${levelX}, ${levelY}`);
+  console.log(`${levelX}, ${levelY}`);
   clearText();
+  
   iterator = cyclicIteration(guardPath[levelY][levelX]);
+
+  // Unlock main door!
+  if (playerStats.getWardenKey && playerStats.lockpickMinigameDone && getAll("a").length !== 0) {
+    getAll("a").forEach(door => door.remove());
+  }
+
+  // Add text to screen
   if (screenText[levelY][levelX] != null) {
     screenText[levelY][levelX].forEach((text) => addText(text[0], options=text[1]));
   }
-
+  
   // Check for keys alr obtained
-  if (playerStats.getWardenKey) {
+  if (playerStats.getWardenKey && getAll("u").length !== 0) {
     getAll("u").forEach(key => key.remove());
   }
 
   // Unlock main hall doors!
-  if (playerStats.getMainKey) {
+  if (playerStats.getMainKey && getAll("x").length !== 0) {
     getAll("x").forEach(door => door.remove());
     getAll("k").forEach(key => key.remove());
   }
-  
-  // Unlock main door!
-  if (playerStats.getWardenKey && playerStats.lockpickMinigameDone) {
-    console.log(getAll("b"))
-    getAll("b").forEach(door => door.remove());
-  }
+
 
   // detect win state 
-  if (levelY == 1 && levelX == 3) {
+  if (levelX == 3 && levelY == 1) {
       addText("You WIN!", { y: 4, color: color`D` });
       playback.end();
       playTune(music.victory);
@@ -1317,7 +1320,6 @@ function updateGame() {
   });
 
   playerSprite = getPlayer();
-  console.log("update game!");
   block = getTile(playerSprite.x, playerSprite.y);
 
   //  Check if lasers touching player every sec
