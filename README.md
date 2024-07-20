@@ -19,7 +19,7 @@ But to help you out here are some tips!
 
 - Guards go in predictable patterns, so take your time watching them
 
-- You can try again! Hitting a laser will take 30 seconds off the time limit, but you aren't completely screwed!
+- You can try again! Hitting a laser (or getting caught in any other way) will take 30 seconds off the time limit, but you aren't completely screwed!
 
 ## Issues
 
